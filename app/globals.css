@@ -40,22 +40,24 @@
   --sk-shadow-raised: 0 6px 20px rgba(16, 24, 40, 0.09), 0 1px 2px rgba(16, 24, 40, 0.04);
   --sk-shadow-overlay: 0 18px 44px rgba(16, 24, 40, 0.14), 0 2px 8px rgba(16, 24, 40, 0.05);
 
-  /* Design-system status palette (used directly, not remapped) */
-  --green-50: #ecfdf5;
-  --green-600: #059669;
-  --green-700: #047857;
-  --orange-100: #ffedd5;
-  --orange-600: #ea580c;
-  --orange-700: #c2410c;
-  --blue-50: #eff6ff;
-  --blue-600: #2563eb;
-  --red-50: #fef2f2;
-  --red-600: #dc2626;
-  --violet-50: #f5f3ff;
-  --violet-500: #8b5cf6;
-  --pink-50: #fdf2f8;
-  --pink-500: #ec4899;
-  --teal-500: #14b8a6;
+  --blue-50: rgb(238, 247, 255);
+  --blue-600: rgb(17, 98, 242);
+  --green-50: rgb(231, 251, 240);
+  --green-600: rgb(0, 145, 70);
+  --green-700: rgb(0, 128, 66);
+  --orange-100: rgb(254, 230, 198);
+  --orange-600: rgb(253, 102, 18);
+  --orange-700: rgb(229, 72, 5);
+  --pink-100: rgb(255, 222, 244);
+  --pink-500: rgb(229, 16, 148);
+  --pink-600: rgb(201, 4, 122);
+  --red-50: rgb(255, 243, 242);
+  --red-600: rgb(227, 18, 46);
+  --teal-50: rgb(235, 250, 249);
+  --teal-600: rgb(0, 164, 178);
+  --violet-100: rgb(234, 232, 252);
+  --violet-500: rgb(117, 66, 255);
+  --violet-600: rgb(94, 17, 250);
 
   --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -111,60 +113,46 @@
   --shadow-overlay: var(--sk-shadow-overlay);
 }
 
-* {
-  box-sizing: border-box;
-}
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
-body {
-  background: var(--sk-page-bg);
-  color: var(--sk-text);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-a {
-  color: var(--sk-link);
-  text-decoration: none;
-}
-a:hover {
-  color: var(--sk-link-hover);
-}
-::selection {
-  background: var(--sk-accent-subtle-strong);
-}
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--sk-border-strong);
-  border-radius: 8px;
-}
-.sk-nav-item:hover {
-  background: var(--sk-surface-sunken) !important;
-  text-decoration: none;
-}
-.sk-row-hover:hover {
-  background: var(--sk-surface-sunken);
-}
-@keyframes sk-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
+/* Layered (not left bare) so Tailwind utility classes — which live in @layer utilities,
+   ordered after @layer base per the CSS Cascade Layers spec — can override these defaults.
+   Un-layered rules always win over layered ones regardless of specificity or source order,
+   so leaving these outside a layer would make e.g. `text-text` on an <a> lose to this file's
+   own `a { color }` rule. */
+@layer base {
+  * {
+    box-sizing: border-box;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  html,
+  body {
+    margin: 0;
+    padding: 0;
   }
-}
-
-.gm-row:hover {
-  background: #f2f6fc;
+  body {
+    background: var(--sk-page-bg);
+    color: var(--sk-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  a {
+    color: var(--sk-link);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--sk-link-hover);
+  }
+  ::selection {
+    background: var(--sk-accent-subtle-strong);
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--sk-border-strong);
+    border-radius: 8px;
+  }
 }

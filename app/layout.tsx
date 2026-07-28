@@ -1,35 +1,30 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { ReactNode } from "react";
+import { BaseWebProvider } from "@/providers/BaseWebProvider";
+import { WorkspaceProvider } from "@/providers/WorkspaceProvider";
+import { Box } from "@/infra/components/Box";
+import { AppSidebar } from "@/modules/sidebar/AppSidebar";
 import "./globals.css";
-import { AppSidebar } from "@/components/shell/AppSidebar";
-import { AppTopBar } from "@/components/shell/AppTopBar";
-import { ToastProvider } from "@/components/ui/Toast";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
-  title: "SwayKin AI — Influencer Marketing Platform",
-  description: "Discover, shortlist and manage Instagram creator outreach.",
+  title: "SwayKin",
+  description: "AI-native influencer marketing platform for D2C brands.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" data-theme="light" className={`${inter.variable} h-full`}>
-      <body className="min-h-full">
-        <ToastProvider>
-          <div className="flex min-h-screen">
-            <AppSidebar />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <AppTopBar />
-              <main className="min-w-0 flex-1">{children}</main>
-            </div>
-          </div>
-        </ToastProvider>
+    <html lang="en">
+      <body>
+        <WorkspaceProvider>
+          <BaseWebProvider>
+            <Box className="flex min-h-screen bg-page">
+              <AppSidebar />
+              <Box as="main" className="min-w-0 flex-1">
+                {children}
+              </Box>
+            </Box>
+          </BaseWebProvider>
+        </WorkspaceProvider>
       </body>
     </html>
   );
