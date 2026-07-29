@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { BaseWebProvider } from "@/providers/BaseWebProvider";
 import { WorkspaceProvider } from "@/providers/WorkspaceProvider";
-import { Box } from "@/infra/components/Box";
-import { AppSidebar } from "@/modules/sidebar/AppSidebar";
+import { UserProvider } from "@/providers/UserProvider";
+import { Box } from "@/infra/baseweb/Box";
+import { AppSidebar } from "@/infra/components/appSidebar/AppSidebar";
+import { AppTopBar } from "@/infra/components/appTopbar/AppTopBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,21 +13,28 @@ export const metadata: Metadata = {
   description: "AI-native influencer marketing platform for D2C brands.",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+const RootLayout = ({ children }: { children: ReactNode }) => {
   return (
     <html lang="en">
       <body>
         <WorkspaceProvider>
-          <BaseWebProvider>
-            <Box className="flex min-h-screen bg-page">
-              <AppSidebar />
-              <Box as="main" className="min-w-0 flex-1">
-                {children}
+          <UserProvider>
+            <BaseWebProvider>
+              <Box className="flex min-h-screen bg-page">
+                <AppSidebar />
+                <Box className="flex min-w-0 flex-1 flex-col">
+                  <AppTopBar />
+                  <Box as="main" className="min-w-0 flex-1">
+                    {children}
+                  </Box>
+                </Box>
               </Box>
-            </Box>
-          </BaseWebProvider>
+            </BaseWebProvider>
+          </UserProvider>
         </WorkspaceProvider>
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

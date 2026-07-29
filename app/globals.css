@@ -36,9 +36,12 @@
   --sk-sidebar-text-active: #0f766e;
   --sk-sidebar-border: #e2e8f0;
 
-  --sk-shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 1px rgba(16, 24, 40, 0.03);
-  --sk-shadow-raised: 0 6px 20px rgba(16, 24, 40, 0.09), 0 1px 2px rgba(16, 24, 40, 0.04);
-  --sk-shadow-overlay: 0 18px 44px rgba(16, 24, 40, 0.14), 0 2px 8px rgba(16, 24, 40, 0.05);
+  --sk-shadow-card:
+    0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 1px rgba(16, 24, 40, 0.03);
+  --sk-shadow-raised:
+    0 6px 20px rgba(16, 24, 40, 0.09), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --sk-shadow-overlay:
+    0 18px 44px rgba(16, 24, 40, 0.14), 0 2px 8px rgba(16, 24, 40, 0.05);
 
   --blue-50: rgb(238, 247, 255);
   --blue-600: rgb(17, 98, 242);
@@ -59,7 +62,9 @@
   --violet-500: rgb(117, 66, 255);
   --violet-600: rgb(94, 17, 250);
 
-  --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans:
+    var(--font-inter), "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
 }
 
 :root[data-theme="dark"] {
@@ -132,7 +137,9 @@
     color: var(--sk-text);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
   }
   a {
     color: var(--sk-link);

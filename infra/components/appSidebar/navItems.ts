@@ -7,10 +7,25 @@ export type NavItem = {
 
 export const navItems: NavItem[] = [
   { key: "dashboard", label: "Dashboard", icon: "ph-squares-four", href: "/" },
-  { key: "discovery", label: "Discovery", icon: "ph-magnifying-glass", href: "/discovery" },
-  { key: "saved", label: "Saved Influencers", icon: "ph-bookmark-simple", href: "/saved" },
+  {
+    key: "discovery",
+    label: "Discovery",
+    icon: "ph-magnifying-glass",
+    href: "/discovery",
+  },
+  {
+    key: "saved",
+    label: "Saved Influencers",
+    icon: "ph-bookmark-simple",
+    href: "/saved",
+  },
   { key: "campaigns", label: "Campaigns", icon: "ph-flag", href: "/campaigns" },
-  { key: "competitors", label: "Competitors", icon: "ph-scales", href: "/competitors" },
+  {
+    key: "competitors",
+    label: "Competitors",
+    icon: "ph-scales",
+    href: "/competitors",
+  },
 ];
 
 export const outreachItem: NavItem = {

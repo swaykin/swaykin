@@ -1,11 +1,11 @@
 export type Workspace = {
   name: string;
   type: string;
-  initials: string;
+  credits: number;
 };
 
 export const mockWorkspace: Workspace = {
   name: "Nova Beauty Co.",
   type: "D2C Brand",
-  initials: "NB",
+  credits: 1240,
 };

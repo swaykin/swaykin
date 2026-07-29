@@ -2,8 +2,12 @@
 
 import { useState, type ReactNode } from "react";
 import { Provider as StyletronProvider } from "styletron-react";
-import { Client as StyletronClientEngine, Server as StyletronServerEngine } from "styletron-engine-atomic";
+import {
+  Client as StyletronClientEngine,
+  Server as StyletronServerEngine,
+} from "styletron-engine-atomic";
 import { BaseProvider } from "baseui";
+import { SnackbarProvider, PLACEMENT } from "baseui/snackbar";
 import { skTheme } from "@/lib/baseTheme";
 
 /**
@@ -15,14 +19,23 @@ import { skTheme } from "@/lib/baseTheme";
  * brief unstyled flash of Base Web components on a hard page load, before the client engine
  * inserts its <style> rules; Tailwind-styled content is unaffected since it's compiled CSS.
  */
-export function BaseWebProvider({ children }: { children: ReactNode }) {
-  const [engine] = useState<InstanceType<typeof StyletronServerEngine> | InstanceType<typeof StyletronClientEngine>>(
-    () => (typeof window === "undefined" ? new StyletronServerEngine() : new StyletronClientEngine()),
+export const BaseWebProvider = ({ children }: { children: ReactNode }) => {
+  const [engine] = useState<
+    | InstanceType<typeof StyletronServerEngine>
+    | InstanceType<typeof StyletronClientEngine>
+  >(() =>
+    typeof window === "undefined"
+      ? new StyletronServerEngine()
+      : new StyletronClientEngine(),
   );
 
   return (
     <StyletronProvider value={engine}>
-      <BaseProvider theme={skTheme}>{children}</BaseProvider>
+      <BaseProvider theme={skTheme}>
+        <SnackbarProvider placement={PLACEMENT.bottom}>
+          {children}
+        </SnackbarProvider>
+      </BaseProvider>
     </StyletronProvider>
   );
-}
+};

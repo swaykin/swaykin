@@ -5,6 +5,10 @@ import { mockWorkspace, type Workspace } from "@/mocks/workspace";
 
 export const WorkspaceContext = createContext<Workspace | null>(null);
 
-export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  return <WorkspaceContext.Provider value={mockWorkspace}>{children}</WorkspaceContext.Provider>;
-}
+export const WorkspaceProvider = ({ children }: { children: ReactNode }) => {
+  return (
+    <WorkspaceContext.Provider value={mockWorkspace}>
+      {children}
+    </WorkspaceContext.Provider>
+  );
+};

@@ -1,5 +1,7 @@
 import { CampaignsPage } from "@/modules/campaigns/CampaignsPage";
 
-export default function Page() {
+const Page = () => {
   return <CampaignsPage />;
-}
+};
+
+export default Page;

@@ -1,5 +1,7 @@
 import { DiscoveryPage } from "@/modules/discovery/DiscoveryPage";
 
-export default function Page() {
+const Page = () => {
   return <DiscoveryPage />;
-}
+};
+
+export default Page;

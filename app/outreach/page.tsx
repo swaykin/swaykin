@@ -1,5 +1,7 @@
 import { OutreachPage } from "@/modules/outreach/OutreachPage";
 
-export default function Page() {
+const Page = () => {
   return <OutreachPage />;
-}
+};
+
+export default Page;

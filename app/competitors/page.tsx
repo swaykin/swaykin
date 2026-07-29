@@ -1,5 +1,7 @@
 import { CompetitorsPage } from "@/modules/competitors/CompetitorsPage";
 
-export default function Page() {
+const Page = () => {
   return <CompetitorsPage />;
-}
+};
+
+export default Page;

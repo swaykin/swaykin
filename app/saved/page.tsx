@@ -1,5 +1,7 @@
 import { SavedPage } from "@/modules/saved/SavedPage";
 
-export default function Page() {
+const Page = () => {
   return <SavedPage />;
-}
+};
+
+export default Page;

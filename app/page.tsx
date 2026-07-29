@@ -1,3 +1,5 @@
-export default function DashboardPage() {
+const DashboardPage = () => {
   return null;
-}
+};
+
+export default DashboardPage;
