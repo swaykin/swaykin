@@ -1,7 +1,9 @@
 import { Box } from "@/infra/baseweb/Box";
 import { Button } from "@/infra/baseweb/Button";
+import { CheckmarkGlyph } from "@/infra/baseweb/Checkbox";
 import { Icon } from "@/infra/baseweb/Icon";
 import { IconButton } from "@/infra/baseweb/IconButton";
+import { Truncate } from "@/infra/components/Truncate";
 import type { ColoredCompetitor } from "../../types";
 
 type CompetitorSelectorChipsProps = {
@@ -10,18 +12,6 @@ type CompetitorSelectorChipsProps = {
   onToggle: (key: string) => void;
   onRemove: (key: string) => void;
 };
-
-const ActiveIcon = ({ active, color }: { active: boolean; color: string }) => (
-  <Box
-    className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded"
-    style={{
-      background: active ? color : "transparent",
-      border: `1.5px solid ${active ? color : "var(--sk-border-strong)"}`,
-    }}
-  >
-    {active && <Icon name="ph-check" weight="bold" size={10} color="#fff" />}
-  </Box>
-);
 
 const CompetitorChip = ({
   competitor,
@@ -46,10 +36,11 @@ const CompetitorChip = ({
       kind="tertiary"
       type="button"
       onClick={() => onToggle(competitor.key)}
-      startEnhancer={<ActiveIcon active={active} color={competitor.color} />}
+      startEnhancer={<CheckmarkGlyph checked={active} color={competitor.color} />}
       height="auto"
       weight="bold"
       fontSize="12px"
+      maxWidth="160px"
       // Explicit, not inherited — kind="tertiary" defaults to its own text color, which
       // would otherwise override the chip's active/inactive color.
       textColor={active ? "var(--sk-text)" : "var(--sk-text-tertiary)"}
@@ -63,7 +54,7 @@ const CompetitorChip = ({
         },
       }}
     >
-      {competitor.name}
+      <Truncate>{competitor.name}</Truncate>
     </Button>
     <IconButton
       kind="tertiary"

@@ -9,9 +9,12 @@ import {
 type ButtonOwnProps = ButtonProps & {
   height?: string;
   width?: string;
+  maxWidth?: string;
   weight?: ButtonFontWeight;
   fontSize?: string;
   textColor?: string;
+  backgroundColor?: string;
+  borderColor?: string;
 };
 
 export const Button = ({
@@ -19,9 +22,12 @@ export const Button = ({
   size,
   height,
   width,
+  maxWidth,
   weight,
   fontSize,
   textColor,
+  backgroundColor,
+  borderColor,
   overrides,
   ...props
 }: ButtonOwnProps) => (
@@ -34,9 +40,19 @@ export const Button = ({
           style: {
             ...(height ? { height } : undefined),
             ...(width ? { width } : undefined),
+            ...(maxWidth ? { maxWidth } : undefined),
             ...(weight ? { fontWeight: BUTTON_FONT_WEIGHTS[weight] } : undefined),
             ...(fontSize ? { fontSize } : undefined),
             ...(textColor ? { color: textColor } : undefined),
+            ...(backgroundColor ? { backgroundColor } : undefined),
+            ...(borderColor
+              ? {
+                  borderTopColor: borderColor,
+                  borderRightColor: borderColor,
+                  borderBottomColor: borderColor,
+                  borderLeftColor: borderColor,
+                }
+              : undefined),
           },
         },
       }),

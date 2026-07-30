@@ -6,28 +6,14 @@ import { IconButton } from "@/infra/baseweb/IconButton";
 // it holds regardless of whether the clear icon is present — Base Web's own default padding is
 // scale-based and asymmetric (left-only), and Input additionally reserves its own 14px on both
 // sides regardless of enhancer presence, so both need resetting rather than layering on top.
-// InputContainer/StartEnhancer/EndEnhancer each paint their own opaque backgroundColor on top of
-// Root, so the sunken background needs to be set on all of them, not just Root.
-const SEARCH_INPUT_OVERRIDES = {
+// StartEnhancer/EndEnhancer also paint their own opaque backgroundColor on top of Root (Input's
+// `backgroundColor` prop already covers Root/InputContainer), so the sunken fill needs setting
+// on these two as well.
+export const SEARCH_INPUT_OVERRIDES = {
   Root: {
     style: {
-      height: "36px",
       paddingLeft: "12px",
       paddingRight: "12px",
-      backgroundColor: "var(--sk-surface-sunken)",
-      borderTopWidth: "1px",
-      borderBottomWidth: "1px",
-      borderLeftWidth: "1px",
-      borderRightWidth: "1px",
-      borderTopColor: "var(--sk-border)",
-      borderBottomColor: "var(--sk-border)",
-      borderLeftColor: "var(--sk-border)",
-      borderRightColor: "var(--sk-border)",
-    },
-  },
-  InputContainer: {
-    style: {
-      backgroundColor: "var(--sk-surface-sunken)",
     },
   },
   // 8px gap to the input text lives on the enhancer's inner edge only — the outer edge is flush
@@ -48,7 +34,6 @@ const SEARCH_INPUT_OVERRIDES = {
   },
   Input: {
     style: {
-      fontSize: "12.5px",
       paddingLeft: "0",
       paddingRight: "0",
     },
@@ -73,6 +58,11 @@ export const SearchInput = ({
     onChange={(e) => onChange(e.target.value)}
     onFocus={onFocus}
     placeholder="Search campaigns, influencers, competitors…"
+    height="36px"
+    borderWidth="1px"
+    borderColor="var(--sk-border)"
+    backgroundColor="var(--sk-surface-sunken)"
+    fontSize="12.5px"
     overrides={SEARCH_INPUT_OVERRIDES}
     startEnhancer={() => (
       <Icon

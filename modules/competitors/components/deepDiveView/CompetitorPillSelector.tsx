@@ -1,6 +1,7 @@
 import { Avatar } from "@/infra/baseweb/Avatar";
 import { Box } from "@/infra/baseweb/Box";
 import { Button } from "@/infra/baseweb/Button";
+import { Truncate } from "@/infra/components/Truncate";
 import type { ColoredCompetitor } from "../../types";
 
 type CompetitorPillSelectorProps = {
@@ -26,6 +27,9 @@ export const CompetitorPillSelector = ({
           height="36px"
           weight="bold"
           fontSize="12.5px"
+          maxWidth="160px"
+          borderColor={borderColor}
+          backgroundColor={active ? competitor.color : "var(--sk-surface)"}
           textColor={active ? "#ffffff" : "var(--sk-text-secondary)"}
           onClick={() => onSelect(competitor.key)}
           startEnhancer={
@@ -39,13 +43,6 @@ export const CompetitorPillSelector = ({
           overrides={{
             BaseButton: {
               style: {
-                borderTopColor: borderColor,
-                borderRightColor: borderColor,
-                borderBottomColor: borderColor,
-                borderLeftColor: borderColor,
-                backgroundColor: active
-                  ? competitor.color
-                  : "var(--sk-surface)",
                 boxShadow: active ? "var(--sk-shadow-card)" : "none",
                 "@media (hover: hover)": {
                   ":hover": {
@@ -58,7 +55,7 @@ export const CompetitorPillSelector = ({
             },
           }}
         >
-          {competitor.name}
+          <Truncate>{competitor.name}</Truncate>
         </Button>
       );
     })}

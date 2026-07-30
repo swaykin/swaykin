@@ -26,12 +26,7 @@ export const UserMenu = ({ user }) => {
         href={user.name}
         className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] text-text-secondary no-underline hover:bg-sunken"
       >
-        <Avatar
-          name={user.name}
-          size="30px"
-          fillColor="var(--sk-accent-strong)"
-          fontSize="12px"
-        />
+        <Avatar name={user.name} size="30px" fontSize="12px" />
         {user.name}
       </Link>
       <Box className="my-1 h-px bg-border" />

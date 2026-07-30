@@ -33,9 +33,8 @@ export const AddCompetitorControl = ({
             onChange={(e) => setNewHandle(e.target.value)}
             placeholder="e.g. @wow_skinscience"
             size="compact"
-            overrides={{
-              Root: { style: { width: "190px", height: "32px" } },
-            }}
+            width="190px"
+            height="32px"
           />
           <Button
             kind="primary"

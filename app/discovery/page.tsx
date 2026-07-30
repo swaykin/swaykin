@@ -1,4 +1,4 @@
-import { DiscoveryPage } from "@/modules/discovery/DiscoveryPage";
+import { DiscoveryPage } from "@/modules/discovery";
 
 const Page = () => {
   return <DiscoveryPage />;
