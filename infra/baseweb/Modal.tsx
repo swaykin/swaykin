@@ -1,5 +1,3 @@
-"use client";
-
 import { Modal as BaseModal, type ModalProps } from "baseui/modal";
 
 export const Modal = (props: ModalProps) => <BaseModal {...props} />;

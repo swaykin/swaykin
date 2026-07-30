@@ -5,7 +5,7 @@ import { ContactUsButton } from "./components/contactUs";
 import { NotificationButton } from "./components/notifications";
 import { UserButton } from "./components/user";
 
-export const AppTopBar = () => {
+const AppTopBar = () => {
   return (
     <Box
       as="header"
@@ -22,3 +22,5 @@ export const AppTopBar = () => {
     </Box>
   );
 };
+
+export default AppTopBar;

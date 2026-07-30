@@ -1,26 +1,17 @@
-"use client";
-
 import { useState } from "react";
-import { useSnackbar } from "baseui/snackbar";
-import { Button, SIZE } from "@/infra/baseweb/Button";
+import { useSnackbar } from "@/infra/baseweb/useSnackbar";
+import { Button } from "@/infra/baseweb/Button";
 import { Drawer } from "@/infra/baseweb/Drawer";
 import { Icon } from "@/infra/baseweb/Icon";
-import { HelpDrawerContent } from "./HelpDrawerContent";
-
-const CheckIcon = ({ size }: { size: number }) => (
-  <Icon name="ph-check-circle" weight="fill" size={size} />
-);
+import { SupportDrawerContent } from "./components/SupportDrawerContent";
 
 export const ContactUsButton = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { enqueue } = useSnackbar();
+  const { onSuccess } = useSnackbar();
 
   const handleSubmit = () => {
     setIsOpen(false);
-    enqueue({
-      message: "Your message has been sent — we'll get back to you soon.",
-      startEnhancer: CheckIcon,
-    });
+    onSuccess("Your message has been sent — we'll get back to you soon.");
   };
 
   return (
@@ -29,15 +20,15 @@ export const ContactUsButton = () => {
         kind="secondary"
         startEnhancer={<Icon name="ph-headset" size={14} />}
         onClick={() => setIsOpen(true)}
-        size={SIZE.compact}
+        height="32px"
+        weight="semiBold"
+        fontSize="12.5px"
+        textColor="var(--sk-text-secondary)"
         overrides={{
           BaseButton: {
             style: {
               paddingLeft: "12px",
               paddingRight: "12px",
-              color: "var(--sk-text-secondary)",
-              fontSize: "12.5px",
-              fontWeight: 600,
               whiteSpace: "nowrap",
             },
           },
@@ -54,7 +45,7 @@ export const ContactUsButton = () => {
           Close: { component: () => null },
         }}
       >
-        <HelpDrawerContent
+        <SupportDrawerContent
           onClose={() => setIsOpen(false)}
           onSubmit={handleSubmit}
         />

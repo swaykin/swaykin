@@ -1,5 +1,3 @@
-"use client";
-
 import { usePathname } from "next/navigation";
 import { Box } from "@/infra/baseweb/Box";
 import { Icon } from "@/infra/baseweb/Icon";
@@ -7,7 +5,7 @@ import { navItems, outreachItem } from "./navItems";
 import { NavItemLink } from "./components/NavItemLink";
 import { Workspace } from "./components/Workspace";
 
-export const AppSidebar = () => {
+const AppSidebar = () => {
   const pathname = usePathname();
   return (
     <Box
@@ -45,3 +43,5 @@ export const AppSidebar = () => {
     </Box>
   );
 };
+
+export default AppSidebar;

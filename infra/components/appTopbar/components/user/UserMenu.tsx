@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Box } from "@/infra/baseweb/Box";
 import { Icon } from "@/infra/baseweb/Icon";
@@ -7,7 +5,7 @@ import { Avatar } from "@/infra/baseweb/Avatar";
 
 const MENU_ITEMS = [
   { label: "Settings", href: "/settings", icon: "ph-gear" },
-  { label: "Usage", href: "/settings", icon: "ph-coin" },
+  { label: "Credits and Usage", href: "/settings", icon: "ph-coin" },
   { label: "Upgrade", href: "/settings", icon: "ph-arrow-circle-up" },
 ];
 
@@ -38,7 +36,7 @@ export const UserMenu = ({ user }) => {
       </Link>
       <Box className="my-1 h-px bg-border" />
       {MENU_ITEMS.map((item) => (
-        <MenuItem key={item.href} item={item} />
+        <MenuItem key={item.label} item={item} />
       ))}
       <Box className="my-1 h-px bg-border" />
       <Link

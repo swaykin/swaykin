@@ -1,8 +1,6 @@
-"use client";
-
 import { Box } from "@/infra/baseweb/Box";
 import { Icon } from "@/infra/baseweb/Icon";
-import { useNotifications, Notification } from "@/hooks/useNotifications";
+import { useNotifications, Notification } from "./useNotifications";
 
 const MenuItem = ({ notification }: { notification: Notification }) => (
   <Box className="flex gap-2.5 rounded-lg p-2">

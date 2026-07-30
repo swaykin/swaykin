@@ -1,5 +1,3 @@
-"use client";
-
 import { Icon } from "@/infra/baseweb/Icon";
 import { Input } from "@/infra/baseweb/Input";
 import { IconButton } from "@/infra/baseweb/IconButton";
@@ -91,11 +89,8 @@ export const SearchInput = ({
               type="button"
               aria-label="Clear search"
               onClick={onClear}
-              overrides={{
-                BaseButton: {
-                  style: { height: "auto", width: "auto" },
-                },
-              }}
+              height="auto"
+              width="auto"
             >
               <Icon name="ph-x" size={13} color="var(--sk-text-tertiary)" />
             </IconButton>

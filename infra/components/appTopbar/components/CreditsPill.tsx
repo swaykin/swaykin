@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Box } from "@/infra/baseweb/Box";
 import { Icon } from "@/infra/baseweb/Icon";

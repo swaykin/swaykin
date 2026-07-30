@@ -1,5 +1,3 @@
-"use client";
-
 import { Box } from "@/infra/baseweb/Box";
 import { Avatar } from "@/infra/baseweb/Avatar";
 import { StatefulPopover } from "@/infra/baseweb/StatefulPopover";
@@ -16,12 +14,7 @@ export const UserButton = () => {
         content={<UserMenu user={user} />}
       >
         <Box as="button" aria-label="Open user menu" className="cursor-pointer">
-          <Avatar
-            name={user.name}
-            size="30px"
-            fillColor="var(--sk-accent-strong)"
-            fontSize="12px"
-          />
+          <Avatar name={user.name} size="30px" fontSize="12px" />
         </Box>
       </StatefulPopover>
     </Box>

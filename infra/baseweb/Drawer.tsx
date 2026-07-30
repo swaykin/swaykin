@@ -1,5 +1,3 @@
-"use client";
-
 import { mergeOverrides } from "baseui";
 import { Drawer as BaseDrawer, type DrawerProps } from "baseui/drawer";
 

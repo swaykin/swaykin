@@ -1,13 +1,13 @@
-import { mergeOverrides } from "baseui";
-import { type ButtonOverrides, type KIND, SIZE } from "baseui/button";
+import { type ButtonOverrides } from "baseui/button";
 
-export const BUTTON_SIZE_OVERRIDES: Partial<Record<string, ButtonOverrides>> = {
-  [SIZE.compact]: {
-    BaseButton: {
-      style: { height: "32px" },
-    },
-  },
-};
+export const BUTTON_FONT_WEIGHTS = {
+  light: 300,
+  medium: 500,
+  semiBold: 600,
+  bold: 700,
+} as const;
+
+export type ButtonFontWeight = keyof typeof BUTTON_FONT_WEIGHTS;
 
 // "Solid brand" — filled primary buttons. Base Web's `buttonDisabledFill`/`buttonDisabledText`
 // theme tokens are shared across every kind, so we can't fix this in the theme without also
@@ -49,27 +49,7 @@ const secondaryOverrides: ButtonOverrides = {
   },
 };
 
-// "Ghost" — borderless, transparent icon-only utility buttons (clear/close/copy).
-const tertiaryOverrides: ButtonOverrides = {
-  BaseButton: {
-    style: {
-      padding: "0",
-      backgroundColor: "transparent",
-    },
-  },
-};
-
 export const BUTTON_KIND_OVERRIDES: Partial<Record<string, ButtonOverrides>> = {
   primary: primaryOverrides,
   secondary: secondaryOverrides,
-  tertiary: tertiaryOverrides,
 };
-
-export const getButtonOverrides = (
-  kind?: (typeof KIND)[keyof typeof KIND],
-  size?: (typeof SIZE)[keyof typeof SIZE],
-): ButtonOverrides =>
-  mergeOverrides(
-    kind ? BUTTON_KIND_OVERRIDES[kind] : undefined,
-    size ? BUTTON_SIZE_OVERRIDES[size] : undefined,
-  );

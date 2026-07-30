@@ -4,8 +4,8 @@ import { BaseWebProvider } from "@/providers/BaseWebProvider";
 import { WorkspaceProvider } from "@/providers/WorkspaceProvider";
 import { UserProvider } from "@/providers/UserProvider";
 import { Box } from "@/infra/baseweb/Box";
-import { AppSidebar } from "@/infra/components/appSidebar/AppSidebar";
-import { AppTopBar } from "@/infra/components/appTopbar/AppTopBar";
+import { AppSidebar } from "@/infra/components/appSidebar";
+import { AppTopBar } from "@/infra/components/appTopbar";
 import "./globals.css";
 
 export const metadata: Metadata = {

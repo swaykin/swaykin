@@ -1,5 +1,3 @@
-"use client";
-
 import { mergeOverrides } from "baseui";
 import {
   FormControl as BaseFormControl,

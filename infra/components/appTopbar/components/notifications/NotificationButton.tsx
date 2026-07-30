@@ -1,5 +1,3 @@
-"use client";
-
 import { Box } from "@/infra/baseweb/Box";
 import { Icon } from "@/infra/baseweb/Icon";
 import { IconButton } from "@/infra/baseweb/IconButton";
@@ -9,7 +7,12 @@ import { NotificationsMenu } from "./NotificationsMenu";
 export const NotificationButton = () => (
   <StatefulPopover placement="bottomRight" content={<NotificationsMenu />}>
     <Box className="relative">
-      <IconButton kind="secondary" aria-label="Notifications" size="compact">
+      <IconButton
+        kind="secondary"
+        aria-label="Notifications"
+        height="32px"
+        width="32px"
+      >
         <Icon name="ph-bell" size={16} color="var(--sk-text-secondary)" />
       </IconButton>
       <Box

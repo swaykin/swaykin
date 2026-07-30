@@ -1,5 +1,3 @@
-"use client";
-
 import { Box } from "@/infra/baseweb/Box";
 import { Avatar } from "@/infra/baseweb/Avatar";
 import { useWorkspace } from "@/hooks/useWorkspace";

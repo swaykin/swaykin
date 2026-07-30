@@ -1,10 +1,8 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
 import { Box } from "@/infra/baseweb/Box";
-import { useGlobalSearch } from "@/hooks/useGlobalSearch";
-import { SearchInput } from "./SearchInput";
-import { SearchResultsMenu } from "./SearchResultsMenu";
+import { useGlobalSearch } from "./useGlobalSearch";
+import { SearchInput } from "./components/SearchInput";
+import { SearchResultsMenu } from "./components/SearchResultsMenu";
 
 export const SearchBar = () => {
   const [query, setQuery] = useState("");

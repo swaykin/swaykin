@@ -1,5 +1,3 @@
-"use client";
-
 import { Avatar } from "@/infra/baseweb/Avatar";
 import { Box } from "@/infra/baseweb/Box";
 import { Icon } from "@/infra/baseweb/Icon";
@@ -39,11 +37,8 @@ export const SupportContactCard = () => {
           type="button"
           aria-label="Copy email"
           onClick={handleCopyEmail}
-          overrides={{
-            BaseButton: {
-              style: { height: "24px", width: "24px" },
-            },
-          }}
+          height="24px"
+          width="24px"
         >
           <Icon name="ph-copy" size={16} color="var(--sk-text-tertiary)" />
         </IconButton>

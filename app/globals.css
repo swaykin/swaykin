@@ -42,25 +42,107 @@
     0 6px 20px rgba(16, 24, 40, 0.09), 0 1px 2px rgba(16, 24, 40, 0.04);
   --sk-shadow-overlay:
     0 18px 44px rgba(16, 24, 40, 0.14), 0 2px 8px rgba(16, 24, 40, 0.05);
+  /* Negative spread pulls the shadow's source rect in from the sides before blurring, so it
+     reads as an edge coming purely from the bottom rather than a halo on all sides — for
+     sticky elements (like PageHeader) that only need a "this is now elevated" cue downward. */
+  --sk-shadow-bottom: 0 4px 6px -2px rgba(16, 24, 40, 0.12);
 
+  --amber-50: rgb(255, 251, 235);
+  --amber-400: rgb(251, 191, 36);
+  --amber-500: rgb(245, 158, 11);
+  --amber-600: rgb(217, 119, 6);
+  --amber-700: rgb(180, 83, 9);
   --blue-50: rgb(238, 247, 255);
+  --blue-100: rgb(214, 234, 255);
+  --blue-400: rgb(96, 165, 250);
+  --blue-500: rgb(59, 130, 246);
   --blue-600: rgb(17, 98, 242);
+  --blue-700: rgb(29, 78, 216);
+  --blue-900: rgb(30, 58, 138);
+  --cyan-50: rgb(236, 254, 255);
+  --cyan-400: rgb(34, 211, 238);
+  --cyan-500: rgb(6, 182, 212);
+  --cyan-600: rgb(8, 145, 178);
+  --cyan-700: rgb(14, 116, 144);
+  --cyan-900: rgb(22, 78, 99);
+  --emerald-50: rgb(236, 253, 245);
+  --emerald-400: rgb(52, 211, 153);
+  --emerald-500: rgb(16, 185, 129);
+  --emerald-600: rgb(5, 150, 105);
+  --emerald-700: rgb(4, 120, 87);
+  --fuchsia-50: rgb(253, 244, 255);
+  --fuchsia-400: rgb(232, 121, 249);
+  --fuchsia-500: rgb(217, 70, 239);
+  --fuchsia-600: rgb(192, 38, 211);
+  --fuchsia-700: rgb(162, 28, 175);
   --green-50: rgb(231, 251, 240);
+  --green-400: rgb(74, 222, 128);
+  --green-500: rgb(22, 163, 74);
   --green-600: rgb(0, 145, 70);
   --green-700: rgb(0, 128, 66);
+  --green-900: rgb(20, 83, 45);
+  --indigo-50: rgb(238, 242, 255);
+  --indigo-400: rgb(129, 140, 248);
+  --indigo-500: rgb(99, 102, 241);
+  --indigo-600: rgb(79, 70, 229);
+  --indigo-700: rgb(67, 56, 202);
+  --lime-50: rgb(247, 254, 231);
+  --lime-400: rgb(163, 230, 53);
+  --lime-500: rgb(132, 204, 22);
+  --lime-600: rgb(101, 163, 13);
+  --lime-700: rgb(77, 124, 15);
+  --orange-50: rgb(255, 247, 237);
   --orange-100: rgb(254, 230, 198);
+  --orange-400: rgb(251, 146, 60);
+  --orange-500: rgb(253, 126, 20);
   --orange-600: rgb(253, 102, 18);
   --orange-700: rgb(229, 72, 5);
+  --orange-900: rgb(124, 45, 18);
+  --pink-50: rgb(255, 241, 249);
   --pink-100: rgb(255, 222, 244);
+  --pink-400: rgb(244, 114, 182);
   --pink-500: rgb(229, 16, 148);
   --pink-600: rgb(201, 4, 122);
+  --pink-700: rgb(190, 24, 93);
+  --pink-900: rgb(131, 24, 67);
+  --purple-50: rgb(250, 245, 255);
+  --purple-400: rgb(192, 132, 252);
+  --purple-500: rgb(168, 85, 247);
+  --purple-600: rgb(147, 51, 234);
+  --purple-700: rgb(126, 34, 206);
   --red-50: rgb(255, 243, 242);
+  --red-400: rgb(252, 121, 121);
+  --red-500: rgb(240, 68, 78);
   --red-600: rgb(227, 18, 46);
+  --red-700: rgb(190, 18, 40);
+  --sky-50: rgb(240, 249, 255);
+  --sky-400: rgb(56, 189, 248);
+  --sky-500: rgb(14, 165, 233);
+  --sky-600: rgb(2, 132, 199);
+  --sky-700: rgb(3, 105, 161);
   --teal-50: rgb(235, 250, 249);
+  --teal-100: rgb(216, 242, 240);
+  --teal-200: rgb(176, 232, 229);
+  --teal-300: rgb(107, 214, 211);
+  --teal-400: rgb(65, 204, 204);
+  --teal-500: rgb(58, 189, 194);
   --teal-600: rgb(0, 164, 178);
+  --teal-700: rgb(2, 142, 158);
+  --teal-800: rgb(0, 115, 133);
+  --teal-900: rgb(0, 78, 92);
+  --teal-950: rgb(0, 47, 56);
+  --violet-50: rgb(243, 240, 255);
   --violet-100: rgb(234, 232, 252);
+  --violet-400: rgb(167, 139, 250);
   --violet-500: rgb(117, 66, 255);
   --violet-600: rgb(94, 17, 250);
+  --violet-700: rgb(76, 29, 200);
+  --violet-900: rgb(49, 26, 110);
+  --yellow-50: rgb(254, 252, 232);
+  --yellow-400: rgb(250, 204, 21);
+  --yellow-500: rgb(234, 179, 8);
+  --yellow-600: rgb(202, 138, 4);
+  --yellow-700: rgb(161, 98, 7);
 
   --font-sans:
     var(--font-inter), "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
@@ -93,6 +175,7 @@
   --sk-shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.04);
   --sk-shadow-raised: 0 8px 24px rgba(0, 0, 0, 0.5);
   --sk-shadow-overlay: 0 20px 48px rgba(0, 0, 0, 0.6);
+  --sk-shadow-bottom: 0 4px 6px -2px rgba(0, 0, 0, 0.4);
 }
 
 /* Expose sk tokens to Tailwind so utilities like `bg-surface`,
@@ -116,6 +199,7 @@
   --shadow-card: var(--sk-shadow-card);
   --shadow-raised: var(--sk-shadow-raised);
   --shadow-overlay: var(--sk-shadow-overlay);
+  --shadow-bottom: var(--sk-shadow-bottom);
 }
 
 /* Layered (not left bare) so Tailwind utility classes — which live in @layer utilities,

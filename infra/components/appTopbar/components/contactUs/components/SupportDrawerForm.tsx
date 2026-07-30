@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Box } from "@/infra/baseweb/Box";
 import { Button } from "@/infra/baseweb/Button";
@@ -7,13 +5,13 @@ import { FormControl } from "@/infra/baseweb/FormControl";
 import { Input } from "@/infra/baseweb/Input";
 import { Textarea } from "@/infra/baseweb/Textarea";
 
-type HelpDrawerFormProps = {
+type SupportDrawerFormProps = {
   onSubmit: (subject: string, description: string) => void;
 };
 
 const LABEL_CLASS_NAME = "text-[14px] font-semibold text-text";
 
-export const HelpDrawerForm = ({ onSubmit }: HelpDrawerFormProps) => {
+export const SupportDrawerForm = ({ onSubmit }: SupportDrawerFormProps) => {
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
 
@@ -54,12 +52,9 @@ export const HelpDrawerForm = ({ onSubmit }: HelpDrawerFormProps) => {
       <Box className="-mx-5 border-t border-border mt-auto flex px-5 py-3 justify-end">
         <Button
           size="small"
-          kind="primary"
           disabled={!canSubmit}
           onClick={handleSubmit}
-          overrides={{
-            BaseButton: { style: { width: "80px" } },
-          }}
+          width="80px"
         >
           Send
         </Button>

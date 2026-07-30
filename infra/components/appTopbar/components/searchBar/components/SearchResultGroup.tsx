@@ -1,7 +1,5 @@
-"use client";
-
 import { Box } from "@/infra/baseweb/Box";
-import { SearchResultGroup as SearchResultGroupType } from "@/hooks/useGlobalSearch";
+import { SearchResultGroup as SearchResultGroupType } from "../useGlobalSearch";
 import { SearchResultItem } from "./SearchResultItem";
 
 type SearchResultGroupProps = {
@@ -9,7 +7,10 @@ type SearchResultGroupProps = {
   onSelect: () => void;
 };
 
-export const SearchResultGroup = ({ group, onSelect }: SearchResultGroupProps) => (
+export const SearchResultGroup = ({
+  group,
+  onSelect,
+}: SearchResultGroupProps) => (
   <Box className="mb-1">
     <Box className="px-2 pb-1 pt-1.5 text-[10.5px] font-bold uppercase tracking-wide text-text-tertiary">
       {group.label}
