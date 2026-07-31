@@ -9,6 +9,7 @@ export const NotificationButton = () => (
     <Box className="relative">
       <IconButton
         kind="secondary"
+        tooltip="Notifications"
         aria-label="Notifications"
         height="32px"
         width="32px"

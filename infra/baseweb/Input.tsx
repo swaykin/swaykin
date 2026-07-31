@@ -15,9 +15,9 @@ export const Input = ({
   height,
   width,
   borderRadius,
-  borderWidth,
+  borderWidth = "1px",
   borderColor,
-  backgroundColor,
+  backgroundColor = "var(--sk-surface-sunken)",
   fontSize,
   overrides,
   ...props
@@ -56,9 +56,21 @@ export const Input = ({
             ...(backgroundColor ? { backgroundColor } : undefined),
           },
         },
-        // Base Web's InputContainer paints its own opaque background on top of Root, so a
-        // caller-set backgroundColor needs to land on both to actually show through.
+        // Base Web's InputContainer/StartEnhancer/EndEnhancer each paint their own opaque
+        // background on top of Root, so a caller-set backgroundColor needs to land on all of
+        // them to actually show through — not just Root. (Padding around enhancers is left
+        // alone here — that's call-site-specific, not a shared primitive concern.)
         InputContainer: {
+          style: {
+            ...(backgroundColor ? { backgroundColor } : undefined),
+          },
+        },
+        StartEnhancer: {
+          style: {
+            ...(backgroundColor ? { backgroundColor } : undefined),
+          },
+        },
+        EndEnhancer: {
           style: {
             ...(backgroundColor ? { backgroundColor } : undefined),
           },

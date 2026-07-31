@@ -54,7 +54,10 @@ export const skTheme = createLightTheme({
     inputFill: "var(--sk-surface)",
     inputFillActive: "var(--sk-surface)",
     inputBorder: "var(--sk-border-strong)",
-    inputPlaceholder: "var(--sk-text-tertiary)",
+    // The design's raw `<input>` markup never sets an explicit placeholder color at all — it
+    // relies on the browser's own built-in ::placeholder styling. `revert` asks for exactly
+    // that (the UA stylesheet's default) rather than us guessing at a specific token/hex.
+    inputPlaceholder: "revert",
 
     // Note: Switch's checked-state colors (Toggle/ToggleTrack) come from the shared
     // contentInversePrimary/backgroundInversePrimary tokens (via primaryB/primaryA above),

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Box } from "@/infra/baseweb/Box";
 import { Input } from "@/infra/baseweb/Input";
 import { CreateOptionRow } from "./components/CreateOptionRow";
@@ -35,24 +35,32 @@ export const SearchableMenu = ({
 }: SearchableMenuProps) => {
   const [search, setSearch] = useState("");
   const query = search.trim().toLowerCase();
-  const filtered = options.filter((option) =>
-    option.toLowerCase().includes(query),
+
+  const filtered = useMemo(
+    () => options.filter((option) => option.toLowerCase().includes(query)),
+    [options, query],
   );
-  const exactMatch = options.some((option) => option.toLowerCase() === query);
+  const exactMatch = useMemo(
+    () => options.some((option) => option.toLowerCase() === query),
+    [options, query],
+  );
   const showCreate = creatable && query.length > 0 && !exactMatch;
 
-  const pick = (value: string) => {
-    if (multi) {
-      onChange(
-        selected.includes(value)
-          ? selected.filter((v) => v !== value)
-          : [...selected, value],
-      );
-    } else {
-      onChange([value]);
-      onCloseRequest?.();
-    }
-  };
+  const pick = useCallback(
+    (value: string) => {
+      if (multi) {
+        onChange(
+          selected.includes(value)
+            ? selected.filter((v) => v !== value)
+            : [...selected, value],
+        );
+      } else {
+        onChange([value]);
+        onCloseRequest?.();
+      }
+    },
+    [multi, selected, onChange, onCloseRequest],
+  );
 
   return (
     <Box className="w-[230px] rounded-xl border border-border bg-surface p-2 shadow-overlay">
@@ -64,8 +72,6 @@ export const SearchableMenu = ({
           size="mini"
           height="30px"
           borderRadius="7px"
-          borderWidth="1px"
-          backgroundColor="var(--sk-surface-sunken)"
           fontSize="12.5px"
           overrides={SEARCH_INPUT_OVERRIDES}
         />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useSnackbar } from "@/infra/baseweb/useSnackbar";
 
 export const useAddCompetitorForm = () => {
@@ -6,9 +6,9 @@ export const useAddCompetitorForm = () => {
   const [showAddInput, setShowAddInput] = useState(false);
   const [newHandle, setNewHandle] = useState("");
 
-  const toggleAddInput = () => setShowAddInput((v) => !v);
+  const toggleAddInput = useCallback(() => setShowAddInput((v) => !v), []);
 
-  const submitAddCompetitor = () => {
+  const submitAddCompetitor = useCallback(() => {
     if (!newHandle.trim()) {
       onError("Enter an Instagram handle to track.");
       return;
@@ -18,7 +18,7 @@ export const useAddCompetitorForm = () => {
     );
     setNewHandle("");
     setShowAddInput(false);
-  };
+  }, [newHandle, onError, onSuccess]);
 
   return {
     showAddInput,

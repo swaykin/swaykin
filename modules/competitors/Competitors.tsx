@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Box } from "@/infra/baseweb/Box";
 import { PageHeader } from "@/infra/components/PageHeader";
 import { useWorkspace } from "@/hooks/useWorkspace";
@@ -14,7 +15,10 @@ const Competitors = () => {
   const { maxTrackedCompetitors } = useWorkspace();
   const removal = useCompetitorRemoval(competitors);
 
-  const activeCompetitors = competitors.filter((c) => !removal.removed[c.key]);
+  const activeCompetitors = useMemo(
+    () => competitors.filter((c) => !removal.removed[c.key]),
+    [competitors, removal.removed],
+  );
 
   return (
     <Box>

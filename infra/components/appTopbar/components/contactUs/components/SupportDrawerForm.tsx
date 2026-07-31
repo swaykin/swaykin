@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Box } from "@/infra/baseweb/Box";
 import { Button } from "@/infra/baseweb/Button";
 import { FormControl } from "@/infra/baseweb/FormControl";
@@ -17,12 +17,12 @@ export const SupportDrawerForm = ({ onSubmit }: SupportDrawerFormProps) => {
 
   const canSubmit = subject.trim().length > 0 && description.trim().length > 0;
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (!canSubmit) return;
     onSubmit(subject, description);
     setSubject("");
     setDescription("");
-  };
+  }, [canSubmit, onSubmit, subject, description]);
 
   return (
     <Box className="flex flex-1 flex-col">
@@ -32,6 +32,7 @@ export const SupportDrawerForm = ({ onSubmit }: SupportDrawerFormProps) => {
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           placeholder="How can we help?"
+          backgroundColor="var(--sk-surface)"
         />
       </FormControl>
       <FormControl
@@ -51,7 +52,6 @@ export const SupportDrawerForm = ({ onSubmit }: SupportDrawerFormProps) => {
       </FormControl>
       <Box className="-mx-5 border-t border-border mt-auto flex px-5 py-3 justify-end">
         <Button
-          size="small"
           disabled={!canSubmit}
           onClick={handleSubmit}
           width="80px"

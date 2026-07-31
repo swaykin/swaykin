@@ -20,14 +20,12 @@ export const SEARCH_INPUT_OVERRIDES = {
   // against Root, which already provides the 12px inset.
   StartEnhancer: {
     style: {
-      backgroundColor: "var(--sk-surface-sunken)",
       paddingLeft: "0",
       paddingRight: "8px",
     },
   },
   EndEnhancer: {
     style: {
-      backgroundColor: "var(--sk-surface-sunken)",
       paddingLeft: "8px",
       paddingRight: "0",
     },
@@ -59,9 +57,7 @@ export const SearchInput = ({
     onFocus={onFocus}
     placeholder="Search campaigns, influencers, competitors…"
     height="36px"
-    borderWidth="1px"
     borderColor="var(--sk-border)"
-    backgroundColor="var(--sk-surface-sunken)"
     fontSize="12.5px"
     overrides={SEARCH_INPUT_OVERRIDES}
     startEnhancer={() => (

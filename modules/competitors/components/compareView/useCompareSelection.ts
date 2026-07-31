@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import { useSnackbar } from "@/infra/baseweb/useSnackbar";
 import { DEFAULT_SELECTED_COMPETITORS } from "../../constants";
@@ -16,19 +16,30 @@ export const useCompareSelection = (
     DEFAULT_SELECTED_COMPETITORS,
   );
 
-  const toggleSelected = (key: string) => {
-    const activeCount = Object.values(selected).filter(Boolean).length;
-    if (!selected[key] && activeCount >= maxTracked - 1) {
-      onError(
-        `You can compare up to ${maxTracked} brands (including yours) at once.`,
-      );
-      return;
-    }
-    setSelected((s) => ({ ...s, [key]: !s[key] }));
-  };
+  const toggleSelected = useCallback(
+    (key: string) => {
+      const activeCount = Object.values(selected).filter(Boolean).length;
+      if (!selected[key] && activeCount >= maxTracked - 1) {
+        onError(
+          `You can compare up to ${maxTracked} brands (including yours) at once.`,
+        );
+        return;
+      }
+      setSelected((s) => ({ ...s, [key]: !s[key] }));
+    },
+    [selected, maxTracked, onError, setSelected],
+  );
 
-  const selectedComps = activeCompetitors.filter((c) => selected[c.key]);
-  const compareCols: ColoredBrandMetrics[] = [yourBrand, ...selectedComps];
+  // Kept as its own useMemo (rather than folded into compareCols) so a selection change doesn't
+  // also invalidate compareCols identity for consumers that only care about the column list.
+  const selectedComps = useMemo(
+    () => activeCompetitors.filter((c) => selected[c.key]),
+    [activeCompetitors, selected],
+  );
+  const compareCols: ColoredBrandMetrics[] = useMemo(
+    () => [yourBrand, ...selectedComps],
+    [yourBrand, selectedComps],
+  );
   const compareRows = useMemo(
     () => buildCompareRows(compareCols),
     [compareCols],

@@ -80,8 +80,6 @@ export const RecentPostsGrid = ({ competitor }: RecentPostsGridProps) => {
           <Button
             kind="secondary"
             type="button"
-            size="small"
-            weight="semiBold"
             onClick={() => onSuccess("Loading more posts…")}
           >
             Load more posts

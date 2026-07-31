@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Box } from "@/infra/baseweb/Box";
 import { useGlobalSearch } from "./useGlobalSearch";
 import { SearchInput } from "./components/SearchInput";
@@ -10,15 +10,21 @@ export const SearchBar = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const groups = useGlobalSearch(query);
 
-  const handleChange = (value: string) => {
+  const handleChange = useCallback((value: string) => {
     setQuery(value);
     setIsOpen(value.trim().length > 0);
-  };
+  }, []);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setQuery("");
     setIsOpen(false);
-  };
+  }, []);
+
+  const handleFocus = useCallback(() => {
+    if (query.trim()) setIsOpen(true);
+  }, [query]);
+
+  const handleResultSelect = useCallback(() => setIsOpen(false), []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -38,16 +44,14 @@ export const SearchBar = () => {
       <SearchInput
         value={query}
         onChange={handleChange}
-        onFocus={() => {
-          if (query.trim()) setIsOpen(true);
-        }}
+        onFocus={handleFocus}
         onClear={handleClear}
       />
       {isOpen && (
         <SearchResultsMenu
           query={query}
           groups={groups}
-          onSelect={() => setIsOpen(false)}
+          onSelect={handleResultSelect}
         />
       )}
     </Box>

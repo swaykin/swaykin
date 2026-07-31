@@ -33,14 +33,12 @@ const RANGE_INPUT_PROPS = {
   width: "125px",
   height: "26px",
   borderRadius: "5px",
-  borderWidth: "1px",
   borderColor: "var(--sk-border)",
-  backgroundColor: "var(--sk-surface-sunken)",
   fontSize: "12.5px",
 };
 
 const NumericRangeField = ({ filter }: { filter: NumericRangeFilter }) => (
-  <Box className="flex h-9 flex-1 items-center gap-[7px] rounded-lg border border-border bg-surface px-3">
+  <Box className="flex h-9 min-w-[260px] flex-1 items-center gap-[7px] rounded-lg border border-border bg-surface px-3">
     <Icon
       name={filter.icon}
       weight="bold"
@@ -83,7 +81,7 @@ const NumericRangeField = ({ filter }: { filter: NumericRangeFilter }) => (
 );
 
 export const NumericRangeFilters = ({ filters }: NumericRangeFiltersProps) => (
-  <Box className="mb-3.5 flex gap-2.5">
+  <Box className="flex flex-wrap gap-2.5">
     {filters.map((filter) => (
       <NumericRangeField key={filter.key} filter={filter} />
     ))}

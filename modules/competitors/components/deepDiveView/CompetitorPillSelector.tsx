@@ -23,10 +23,8 @@ export const CompetitorPillSelector = ({
         <Button
           key={competitor.key}
           kind="secondary"
-          type="button"
           height="36px"
           weight="bold"
-          fontSize="12.5px"
           maxWidth="160px"
           borderColor={borderColor}
           backgroundColor={active ? competitor.color : "var(--sk-surface)"}

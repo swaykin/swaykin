@@ -35,12 +35,11 @@ export const AddCompetitorControl = ({
             size="compact"
             width="190px"
             height="32px"
+            backgroundColor="var(--sk-surface)"
           />
           <Button
             kind="primary"
-            size="small"
             height="32px"
-            weight="semiBold"
             onClick={submitAddCompetitor}
           >
             Add
@@ -50,8 +49,6 @@ export const AddCompetitorControl = ({
         <Button
           kind="primary"
           height="32px"
-          size="small"
-          weight="semiBold"
           startEnhancer={<Icon name="ph-plus" weight="bold" size={11} />}
           onClick={toggleAddInput}
         >

@@ -1,8 +1,8 @@
 import { Avatar } from "@/infra/baseweb/Avatar";
 import { Box } from "@/infra/baseweb/Box";
 import { Icon } from "@/infra/baseweb/Icon";
+import { InstagramLink } from "@/infra/components/InstagramLink";
 import type { ColoredCompetitor } from "../../types";
-import { InstagramLink } from "../InstagramLink";
 
 type BioSummaryCardProps = {
   competitor: ColoredCompetitor;

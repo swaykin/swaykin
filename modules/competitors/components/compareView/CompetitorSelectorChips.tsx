@@ -34,9 +34,10 @@ const CompetitorChip = ({
   >
     <Button
       kind="tertiary"
-      type="button"
       onClick={() => onToggle(competitor.key)}
-      startEnhancer={<CheckmarkGlyph checked={active} color={competitor.color} />}
+      startEnhancer={
+        <CheckmarkGlyph checked={active} color={competitor.color} />
+      }
       height="auto"
       weight="bold"
       fontSize="12px"

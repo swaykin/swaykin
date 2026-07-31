@@ -10,7 +10,6 @@ export const CreateOptionRow = ({ value, onClick }: CreateOptionRowProps) => (
   <Button
     kind="tertiary"
     onClick={onClick}
-    weight="semiBold"
     startEnhancer={<Icon name="ph-plus" weight="bold" size={14} />}
     overrides={{
       BaseButton: {

@@ -1,3 +1,24 @@
+export type DiscoveryFilters = {
+  hasEmail: boolean;
+  isVerified: boolean;
+  hashtags: string[];
+  categories: string[];
+  locations: string[];
+  followers: [string, string];
+  engagementRate: [string, string];
+};
+
+export type { Influencer } from "@/mocks/discovery";
+
+/** Owned here (not by `mocks/savedSearches.ts`) since it embeds `DiscoveryFilters` — a
+ * module-level concept the mocks layer shouldn't need to know about. */
+export type SavedSearch = {
+  id: string;
+  name: string;
+  desc: string;
+  filters: DiscoveryFilters;
+};
+
 export type NumericRangeFilter = {
   key: string;
   label: string;
