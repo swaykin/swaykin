@@ -81,7 +81,7 @@ const InfluencerRow = ({
       {formatCompactNumber(influencer.avgCommentsNum)}
     </td>
     <td className={`${BODY_CELL} text-center`}>
-      {influencer.hasCollabs && (
+      {!!influencer.collabs?.length && (
         <Icon
           name="ph-handshake"
           weight="fill"
@@ -91,7 +91,7 @@ const InfluencerRow = ({
       )}
     </td>
     <td className={`${BODY_CELL} text-center`}>
-      {influencer.hasEmail && (
+      {influencer.email && (
         <Icon
           name="ph-envelope-simple"
           weight="fill"

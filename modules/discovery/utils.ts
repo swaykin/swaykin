@@ -49,7 +49,7 @@ export const filterInfluencers = (
     ) {
       return false;
     }
-    if (filters.hasEmail && !inf.hasEmail) return false;
+    if (filters.hasEmail && !inf.email) return false;
     if (filters.isVerified && !inf.verified) return false;
     return true;
   });

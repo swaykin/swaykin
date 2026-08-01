@@ -2,6 +2,6 @@
 
 import dynamic from "next/dynamic";
 
-export const DiscoveryPage = dynamic(() => import("./DiscoveryPage"), {
+export const Discovery = dynamic(() => import("./Discovery"), {
   ssr: false,
 });

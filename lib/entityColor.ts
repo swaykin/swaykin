@@ -98,3 +98,27 @@ const hashString = (value: string): number => {
  */
 export const getEntityColorByName = (name: string): string =>
   AVATAR_PALETTE[hashString(name) % AVATAR_PALETTE.length];
+
+// Skips red, same reasoning as PALETTE above (reserved for errors/destructive actions).
+const TINT_HUE_ORDER = [
+  "pink",
+  "teal",
+  "orange",
+  "violet",
+  "amber",
+  "sky",
+  "blue",
+  "lime",
+  "indigo",
+  "green",
+  "purple",
+  "emerald",
+  "fuchsia",
+  "cyan",
+];
+const TINT_PALETTE: string[] = TINT_HUE_ORDER.map((hue) => `var(--${hue}-50)`);
+
+/** Post-tile background tint for a profile (competitor or influencer), by hashed name — same
+ * derived-not-stored approach as `getEntityColorByName`, just a lighter, single shared tone. */
+export const getEntityTintByName = (name: string): string =>
+  TINT_PALETTE[hashString(name) % TINT_PALETTE.length];

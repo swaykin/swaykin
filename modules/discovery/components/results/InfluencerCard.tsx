@@ -13,7 +13,7 @@ type InfluencerCardProps = {
   influencer: Influencer;
   selected: boolean;
   onToggleSelect: () => void;
-  shortlisted: boolean;
+  saved: boolean;
   onToggleShortlist: () => void;
   onOpen: () => void;
 };
@@ -22,7 +22,7 @@ type InfluencerCardHeaderProps = {
   influencer: Influencer;
   selected: boolean;
   onToggleSelect: () => void;
-  shortlisted: boolean;
+  saved: boolean;
   onToggleShortlist: () => void;
   onOpen: () => void;
 };
@@ -31,7 +31,7 @@ const InfluencerCardHeader = ({
   influencer,
   selected,
   onToggleSelect,
-  shortlisted,
+  saved,
   onToggleShortlist,
   onOpen,
 }: InfluencerCardHeaderProps) => (
@@ -70,17 +70,17 @@ const InfluencerCardHeader = ({
     <IconButton
       kind="tertiary"
       type="button"
-      aria-label={shortlisted ? "Remove from shortlist" : "Add to shortlist"}
-      tooltip={shortlisted ? "Remove from shortlist" : "Add to shortlist"}
+      aria-label={saved ? "Remove from shortlist" : "Add to shortlist"}
+      tooltip={saved ? "Remove from shortlist" : "Add to shortlist"}
       onClick={onToggleShortlist}
       height="auto"
       width="auto"
     >
       <Icon
         name="ph-bookmark-simple"
-        weight={shortlisted ? "fill" : "regular"}
+        weight={saved ? "fill" : "regular"}
         size={17}
-        color={shortlisted ? "var(--sk-accent-strong)" : "var(--sk-text-tertiary)"}
+        color={saved ? "var(--sk-accent-strong)" : "var(--sk-text-tertiary)"}
       />
     </IconButton>
   </Box>
@@ -123,7 +123,7 @@ export const InfluencerCard = ({
   influencer,
   selected,
   onToggleSelect,
-  shortlisted,
+  saved,
   onToggleShortlist,
   onOpen,
 }: InfluencerCardProps) => (
@@ -138,17 +138,17 @@ export const InfluencerCard = ({
       influencer={influencer}
       selected={selected}
       onToggleSelect={onToggleSelect}
-      shortlisted={shortlisted}
+      saved={saved}
       onToggleShortlist={onToggleShortlist}
       onOpen={onOpen}
     />
 
     <Box className="flex flex-wrap gap-1.5">
       <Tag label={influencer.niche} />
-      {influencer.hasCollabs && (
+      {!!influencer.collabs?.length && (
         <Tag label="Recent collabs" icon="ph-handshake" tone="accent" />
       )}
-      {influencer.hasEmail && (
+      {influencer.email && (
         <Tag label="Email available" icon="ph-envelope-simple" tone="teal" />
       )}
     </Box>

@@ -1,8 +1,8 @@
 import { Box } from "@/infra/baseweb/Box";
+import { ContentMixLegend } from "@/infra/components/ContentMixLegend";
+import { ContentMixSegment } from "@/infra/components/ContentMixSegment";
 import { CAROUSEL, REEL, STATIC } from "@/lib/entityColor";
 import type { ColoredBrandMetrics } from "../../types";
-import { ContentMixLegend } from "../ContentMixLegend";
-import { ContentMixSegment } from "../ContentMixSegment";
 
 type ContentMixCardProps = {
   compareCols: ColoredBrandMetrics[];

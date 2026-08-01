@@ -1,11 +1,7 @@
-export type ContentPost = {
-  type: string;
-  icon: string;
-  likes: string;
-  eng: string;
-  date: string;
-  comments: string;
-};
+import type { Post as ContentPost } from "@/infra/components/RecentPostsCard";
+import type { Hashtag as CompetitorHashtag } from "@/infra/components/TopHashtagsCard";
+
+export type { ContentPost, CompetitorHashtag };
 
 export type Collaboration = {
   name: string;
@@ -13,13 +9,6 @@ export type Collaboration = {
   eng: string;
   lastDate: string;
   worksWithYou: boolean;
-};
-
-export type CompetitorHashtag = {
-  tag: string;
-  uses: number;
-  eng: string;
-  pct: number;
 };
 
 export type BrandMetrics = {
@@ -85,26 +74,26 @@ export const mockCompetitors: Competitor[] = [
     pctCarousel: 30,
     pctStatic: 12,
     posts: [
-      { type: "Reel", icon: "ph-play", likes: "14.2K", eng: "3.8%", date: "Jul 21", comments: "260" },
-      { type: "Carousel", icon: "ph-square-half", likes: "9.1K", eng: "2.4%", date: "Jul 19", comments: "160" },
-      { type: "Reel", icon: "ph-play", likes: "18.6K", eng: "4.9%", date: "Jul 17", comments: "330" },
-      { type: "Static", icon: "ph-image", likes: "6.7K", eng: "1.9%", date: "Jul 14", comments: "120" },
-      { type: "Reel", icon: "ph-play", likes: "11.3K", eng: "3.1%", date: "Jul 12", comments: "200" },
-      { type: "Carousel", icon: "ph-square-half", likes: "8.4K", eng: "2.6%", date: "Jul 9", comments: "150" },
-      { type: "Static", icon: "ph-image", likes: "5.3K", eng: "1.7%", date: "Jul 7", comments: "80" },
-      { type: "Reel", icon: "ph-play", likes: "16.1K", eng: "4.3%", date: "Jul 5", comments: "290" },
-      { type: "Carousel", icon: "ph-square-half", likes: "7.9K", eng: "2.3%", date: "Jul 3", comments: "140" },
-      { type: "Reel", icon: "ph-play", likes: "12.8K", eng: "3.5%", date: "Jul 1", comments: "220" },
-      { type: "Static", icon: "ph-image", likes: "4.6K", eng: "1.5%", date: "Jun 29", comments: "70" },
-      { type: "Reel", icon: "ph-play", likes: "17.4K", eng: "4.6%", date: "Jun 27", comments: "310" },
-      { type: "Carousel", icon: "ph-square-half", likes: "6.8K", eng: "2.0%", date: "Jun 25", comments: "110" },
-      { type: "Reel", icon: "ph-play", likes: "13.9K", eng: "3.7%", date: "Jun 23", comments: "240" },
-      { type: "Static", icon: "ph-image", likes: "5.9K", eng: "1.8%", date: "Jun 21", comments: "95" },
-      { type: "Reel", icon: "ph-play", likes: "15.2K", eng: "4.0%", date: "Jun 19", comments: "270" },
-      { type: "Carousel", icon: "ph-square-half", likes: "8.9K", eng: "2.5%", date: "Jun 17", comments: "155" },
-      { type: "Reel", icon: "ph-play", likes: "10.7K", eng: "2.9%", date: "Jun 15", comments: "185" },
-      { type: "Static", icon: "ph-image", likes: "4.2K", eng: "1.4%", date: "Jun 13", comments: "65" },
-      { type: "Reel", icon: "ph-play", likes: "19.3K", eng: "5.0%", date: "Jun 11", comments: "340" },
+      { type: "Reel", icon: "ph-play", date: "Jul 21", likes: 14200, comments: 260, views: 88040 },
+      { type: "Carousel", icon: "ph-square-half", date: "Jul 19", likes: 9100, comments: 160, views: 30940 },
+      { type: "Reel", icon: "ph-play", date: "Jul 17", likes: 18600, comments: 330, views: 115320 },
+      { type: "Static", icon: "ph-image", date: "Jul 14", likes: 6700, comments: 120, views: 17420 },
+      { type: "Reel", icon: "ph-play", date: "Jul 12", likes: 11300, comments: 200, views: 70060 },
+      { type: "Carousel", icon: "ph-square-half", date: "Jul 9", likes: 8400, comments: 150, views: 28560 },
+      { type: "Static", icon: "ph-image", date: "Jul 7", likes: 5300, comments: 80, views: 13780 },
+      { type: "Reel", icon: "ph-play", date: "Jul 5", likes: 16100, comments: 290, views: 99820 },
+      { type: "Carousel", icon: "ph-square-half", date: "Jul 3", likes: 7900, comments: 140, views: 26860 },
+      { type: "Reel", icon: "ph-play", date: "Jul 1", likes: 12800, comments: 220, views: 79360 },
+      { type: "Static", icon: "ph-image", date: "Jun 29", likes: 4600, comments: 70, views: 11960 },
+      { type: "Reel", icon: "ph-play", date: "Jun 27", likes: 17400, comments: 310, views: 107880 },
+      { type: "Carousel", icon: "ph-square-half", date: "Jun 25", likes: 6800, comments: 110, views: 23120 },
+      { type: "Reel", icon: "ph-play", date: "Jun 23", likes: 13900, comments: 240, views: 86180 },
+      { type: "Static", icon: "ph-image", date: "Jun 21", likes: 5900, comments: 95, views: 15340 },
+      { type: "Reel", icon: "ph-play", date: "Jun 19", likes: 15200, comments: 270, views: 94240 },
+      { type: "Carousel", icon: "ph-square-half", date: "Jun 17", likes: 8900, comments: 155, views: 30260 },
+      { type: "Reel", icon: "ph-play", date: "Jun 15", likes: 10700, comments: 185, views: 66340 },
+      { type: "Static", icon: "ph-image", date: "Jun 13", likes: 4200, comments: 65, views: 10920 },
+      { type: "Reel", icon: "ph-play", date: "Jun 11", likes: 19300, comments: 340, views: 119660 },
     ],
     collabs: [
       { name: "Ritika Sen", tier: "Macro", eng: "5.2%", lastDate: "Jul 18", worksWithYou: true },
@@ -114,11 +103,11 @@ export const mockCompetitors: Competitor[] = [
       { name: "Priya Nambiar", tier: "Macro", eng: "4.4%", lastDate: "Jun 20", worksWithYou: true },
     ],
     hashtags: [
-      { tag: "toxinfree", uses: 34, eng: "4.6%", pct: 90 },
-      { tag: "mamaearth", uses: 29, eng: "3.9%", pct: 76 },
-      { tag: "sustainablebeauty", uses: 21, eng: "5.1%", pct: 55 },
-      { tag: "skincareroutine", uses: 18, eng: "3.2%", pct: 47 },
-      { tag: "goodnessinside", uses: 12, eng: "4.8%", pct: 32 },
+      { tag: "toxinfree", uses: 34, eng: "4.6%" },
+      { tag: "mamaearth", uses: 29, eng: "3.9%" },
+      { tag: "sustainablebeauty", uses: 21, eng: "5.1%" },
+      { tag: "skincareroutine", uses: 18, eng: "3.2%" },
+      { tag: "goodnessinside", uses: 12, eng: "4.8%" },
     ],
     hashtagNote: "#sustainablebeauty and #goodnessinside correlate with the highest engagement, well above the account average.",
   },
@@ -145,12 +134,12 @@ export const mockCompetitors: Competitor[] = [
     pctCarousel: 26,
     pctStatic: 10,
     posts: [
-      { type: "Reel", icon: "ph-play", likes: "11.8K", eng: "6.9%", date: "Jul 22", comments: "210" },
-      { type: "Reel", icon: "ph-play", likes: "9.4K", eng: "5.4%", date: "Jul 20", comments: "170" },
-      { type: "Carousel", icon: "ph-square-half", likes: "7.4K", eng: "4.8%", date: "Jul 18", comments: "130" },
-      { type: "Reel", icon: "ph-play", likes: "13.1K", eng: "7.2%", date: "Jul 15", comments: "240" },
-      { type: "Static", icon: "ph-image", likes: "5.9K", eng: "3.9%", date: "Jul 13", comments: "110" },
-      { type: "Reel", icon: "ph-play", likes: "10.2K", eng: "6.1%", date: "Jul 10", comments: "180" },
+      { type: "Reel", icon: "ph-play", date: "Jul 22", likes: 11800, comments: 210, views: 73160 },
+      { type: "Reel", icon: "ph-play", date: "Jul 20", likes: 9400, comments: 170, views: 58280 },
+      { type: "Carousel", icon: "ph-square-half", date: "Jul 18", likes: 7400, comments: 130, views: 25160 },
+      { type: "Reel", icon: "ph-play", date: "Jul 15", likes: 13100, comments: 240, views: 81220 },
+      { type: "Static", icon: "ph-image", date: "Jul 13", likes: 5900, comments: 110, views: 15340 },
+      { type: "Reel", icon: "ph-play", date: "Jul 10", likes: 10200, comments: 180, views: 63240 },
     ],
     collabs: [
       { name: "Ananya Kapoor", tier: "Micro", eng: "6.8%", lastDate: "Jul 20", worksWithYou: true },
@@ -159,11 +148,11 @@ export const mockCompetitors: Competitor[] = [
       { name: "Farah Khan Jr.", tier: "Macro", eng: "4.1%", lastDate: "Jun 29", worksWithYou: false },
     ],
     hashtags: [
-      { tag: "plumgoodness", uses: 31, eng: "6.4%", pct: 88 },
-      { tag: "veganbeauty", uses: 26, eng: "7.1%", pct: 74 },
-      { tag: "crueltyfree", uses: 22, eng: "6.0%", pct: 63 },
-      { tag: "greentea", uses: 15, eng: "5.5%", pct: 43 },
-      { tag: "cleanbeauty", uses: 11, eng: "4.9%", pct: 31 },
+      { tag: "plumgoodness", uses: 31, eng: "6.4%" },
+      { tag: "veganbeauty", uses: 26, eng: "7.1%" },
+      { tag: "crueltyfree", uses: 22, eng: "6.0%" },
+      { tag: "greentea", uses: 15, eng: "5.5%" },
+      { tag: "cleanbeauty", uses: 11, eng: "4.9%" },
     ],
     hashtagNote: "#veganbeauty posts outperform the account average by nearly 1 full point of engagement.",
   },
@@ -190,12 +179,12 @@ export const mockCompetitors: Competitor[] = [
     pctCarousel: 19,
     pctStatic: 10,
     posts: [
-      { type: "Reel", icon: "ph-play", likes: "8.9K", eng: "2.9%", date: "Jul 21", comments: "160" },
-      { type: "Reel", icon: "ph-play", likes: "10.4K", eng: "3.6%", date: "Jul 18", comments: "190" },
-      { type: "Carousel", icon: "ph-square-half", likes: "5.2K", eng: "2.1%", date: "Jul 16", comments: "90" },
-      { type: "Reel", icon: "ph-play", likes: "9.7K", eng: "3.2%", date: "Jul 13", comments: "170" },
-      { type: "Static", icon: "ph-image", likes: "4.1K", eng: "1.6%", date: "Jul 11", comments: "70" },
-      { type: "Reel", icon: "ph-play", likes: "11.6K", eng: "4.0%", date: "Jul 8", comments: "210" },
+      { type: "Reel", icon: "ph-play", date: "Jul 21", likes: 8900, comments: 160, views: 55180 },
+      { type: "Reel", icon: "ph-play", date: "Jul 18", likes: 10400, comments: 190, views: 64480 },
+      { type: "Carousel", icon: "ph-square-half", date: "Jul 16", likes: 5200, comments: 90, views: 17680 },
+      { type: "Reel", icon: "ph-play", date: "Jul 13", likes: 9700, comments: 170, views: 60140 },
+      { type: "Static", icon: "ph-image", date: "Jul 11", likes: 4100, comments: 70, views: 10660 },
+      { type: "Reel", icon: "ph-play", date: "Jul 8", likes: 11600, comments: 210, views: 71920 },
     ],
     collabs: [
       { name: "Dr. Rhea Malhotra", tier: "Micro", eng: "5.5%", lastDate: "Jul 15", worksWithYou: false },
@@ -204,11 +193,11 @@ export const mockCompetitors: Competitor[] = [
       { name: "Kavya Menon", tier: "Micro", eng: "6.7%", lastDate: "Jun 22", worksWithYou: false },
     ],
     hashtags: [
-      { tag: "minimalist", uses: 28, eng: "3.6%", pct: 82 },
-      { tag: "activebeauty", uses: 20, eng: "4.2%", pct: 60 },
-      { tag: "dermbacked", uses: 17, eng: "3.9%", pct: 51 },
-      { tag: "niacinamide", uses: 14, eng: "3.1%", pct: 42 },
-      { tag: "skinbarrier", uses: 9, eng: "2.8%", pct: 27 },
+      { tag: "minimalist", uses: 28, eng: "3.6%" },
+      { tag: "activebeauty", uses: 20, eng: "4.2%" },
+      { tag: "dermbacked", uses: 17, eng: "3.9%" },
+      { tag: "niacinamide", uses: 14, eng: "3.1%" },
+      { tag: "skinbarrier", uses: 9, eng: "2.8%" },
     ],
     hashtagNote: "#activebeauty and #dermbacked posts run above account average; broad tags like #minimalist trail behind.",
   },
@@ -235,12 +224,12 @@ export const mockCompetitors: Competitor[] = [
     pctCarousel: 22,
     pctStatic: 12,
     posts: [
-      { type: "Reel", icon: "ph-play", likes: "9.2K", eng: "2.2%", date: "Jul 20", comments: "170" },
-      { type: "Carousel", icon: "ph-square-half", likes: "6.8K", eng: "1.8%", date: "Jul 17", comments: "120" },
-      { type: "Reel", icon: "ph-play", likes: "10.9K", eng: "2.9%", date: "Jul 15", comments: "200" },
-      { type: "Static", icon: "ph-image", likes: "5.1K", eng: "1.4%", date: "Jul 12", comments: "90" },
-      { type: "Reel", icon: "ph-play", likes: "12.3K", eng: "3.3%", date: "Jul 9", comments: "220" },
-      { type: "Reel", icon: "ph-play", likes: "8.4K", eng: "2.1%", date: "Jul 6", comments: "150" },
+      { type: "Reel", icon: "ph-play", date: "Jul 20", likes: 9200, comments: 170, views: 57040 },
+      { type: "Carousel", icon: "ph-square-half", date: "Jul 17", likes: 6800, comments: 120, views: 23120 },
+      { type: "Reel", icon: "ph-play", date: "Jul 15", likes: 10900, comments: 200, views: 67580 },
+      { type: "Static", icon: "ph-image", date: "Jul 12", likes: 5100, comments: 90, views: 13260 },
+      { type: "Reel", icon: "ph-play", date: "Jul 9", likes: 12300, comments: 220, views: 76260 },
+      { type: "Reel", icon: "ph-play", date: "Jul 6", likes: 8400, comments: 150, views: 52080 },
     ],
     collabs: [
       { name: "Tanvi Chheda", tier: "Nano", eng: "8.4%", lastDate: "Jul 19", worksWithYou: false },
@@ -250,11 +239,11 @@ export const mockCompetitors: Competitor[] = [
       { name: "Devika Rao", tier: "Nano", eng: "8.1%", lastDate: "Jun 26", worksWithYou: false },
     ],
     hashtags: [
-      { tag: "wowskinscience", uses: 40, eng: "2.6%", pct: 95 },
-      { tag: "haircare", uses: 24, eng: "3.4%", pct: 68 },
-      { tag: "applecidervinegar", uses: 16, eng: "2.9%", pct: 45 },
-      { tag: "discountcode", uses: 22, eng: "1.9%", pct: 62 },
-      { tag: "hairfall", uses: 13, eng: "3.1%", pct: 38 },
+      { tag: "wowskinscience", uses: 40, eng: "2.6%" },
+      { tag: "haircare", uses: 24, eng: "3.4%" },
+      { tag: "applecidervinegar", uses: 16, eng: "2.9%" },
+      { tag: "discountcode", uses: 22, eng: "1.9%" },
+      { tag: "hairfall", uses: 13, eng: "3.1%" },
     ],
     hashtagNote: "Educational tags like #haircare beat promo-heavy #discountcode posts by over 1.5 points of engagement.",
   },

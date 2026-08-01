@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import _noop from "lodash/noop";
 import { Box } from "@/infra/baseweb/Box";
 import { PageHeader } from "@/infra/components/PageHeader";
 import { useSnackbar } from "@/infra/baseweb/useSnackbar";
+import { useSavedInfluencers } from "@/hooks/useSavedInfluencers";
 import { OrDivider } from "./components/OrDivider";
 import { UsernameInput } from "./components/UsernameInput";
 import { Filters } from "./components/filterPanel/Filters";
@@ -17,10 +19,9 @@ import { SavedSearches } from "./components/savedSearches/SavedSearches";
 import { MIN_COMPARE_SELECTION, MAX_COMPARE_SELECTION } from "./constants";
 import { useFilters } from "./hooks/useFilters";
 import { useGetInfluencers } from "./hooks/useGetInfluencers";
-import { useShortlist } from "./hooks/useShortlist";
 import { filterInfluencers } from "./utils";
 
-const DiscoveryPage = () => {
+const Discovery = () => {
   const { influencers } = useGetInfluencers();
   const { onError, onSuccess } = useSnackbar();
   const {
@@ -34,10 +35,13 @@ const DiscoveryPage = () => {
     onApplySnapshot,
   } = useFilters();
 
+  const router = useRouter();
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [view, setView] = useState<ResultsView>("grid");
   const [compareOpen, setCompareOpen] = useState(false);
-  const { shortlisted, toggleShortlist, shortlistMany } = useShortlist();
+  const { savedIds, toggleSaved, saveMany } = useSavedInfluencers();
+
+  const onOpenInfluencer = (id: string) => router.push(`/discovery/${id}`);
 
   const visibleInfluencers = useMemo(
     () => filterInfluencers(influencers, appliedFilters),
@@ -68,15 +72,17 @@ const DiscoveryPage = () => {
   };
 
   const onSave = () => {
-    shortlistMany(selectedInfluencers.map((influencer) => influencer.id));
-    onSuccess(`Saved ${selectedCount} creator${selectedCount === 1 ? "" : "s"} to your shortlist.`);
+    saveMany(selectedInfluencers.map((influencer) => influencer.id));
+    onSuccess(
+      `Saved ${selectedCount} creator${selectedCount === 1 ? "" : "s"} to your shortlist.`,
+    );
   };
 
   return (
     <Box>
       <PageHeader
-        title="Influencer Discovery"
-        description="Look up a creator directly, or filter public Instagram data to discover new ones."
+        title="Discovery"
+        description="Look up a creator directly, or discover new ones fit for your brand"
       />
       <Box className="px-7 pb-5">
         <UsernameInput />
@@ -123,9 +129,9 @@ const DiscoveryPage = () => {
                     influencer={influencer}
                     selected={!!selected[influencer.id]}
                     onToggleSelect={() => toggleSelect(influencer.id)}
-                    shortlisted={!!shortlisted[influencer.id]}
-                    onToggleShortlist={() => toggleShortlist(influencer.id)}
-                    onOpen={_noop}
+                    saved={!!savedIds[influencer.id]}
+                    onToggleShortlist={() => toggleSaved(influencer.id)}
+                    onOpen={() => onOpenInfluencer(influencer.id)}
                   />
                 ))}
               </Box>
@@ -134,7 +140,7 @@ const DiscoveryPage = () => {
                 influencers={visibleInfluencers}
                 selected={selected}
                 onToggleSelect={toggleSelect}
-                onOpen={_noop}
+                onOpen={onOpenInfluencer}
               />
             )}
             <LoadMoreButton onClick={_noop} />
@@ -145,5 +151,4 @@ const DiscoveryPage = () => {
   );
 };
 
-export { DiscoveryPage };
-export default DiscoveryPage;
+export default Discovery;

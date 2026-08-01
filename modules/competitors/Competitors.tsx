@@ -24,7 +24,7 @@ const Competitors = () => {
     <Box>
       <PageHeader
         title="Competitors"
-        description="Track competitor activity and benchmark against your brand."
+        description="Track competitor activity and benchmark against your brand"
       />
       <AddCompetitorControl
         trackedCount={activeCompetitors.length}

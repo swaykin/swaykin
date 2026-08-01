@@ -1,7 +1,7 @@
-import { DiscoveryPage } from "@/modules/discovery";
+import { Discovery } from "@/modules/discovery";
 
 const Page = () => {
-  return <DiscoveryPage />;
+  return <Discovery />;
 };
 
 export default Page;

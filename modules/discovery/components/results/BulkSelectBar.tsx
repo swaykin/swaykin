@@ -30,24 +30,21 @@ export const BulkSelectBar = ({
       borderColor="var(--sk-accent-subtle-strong)"
       backgroundColor="transparent"
       textColor="var(--sk-accent-strong)"
+      onClick={onCompare}
+    >
+      Compare
+    </Button>
+    <Button
+      kind="primary"
+      type="button"
+      height="36px"
+      fontSize="12.5px"
       startEnhancer={
         <Icon name="ph-bookmark-simple" weight="bold" size={12.5} />
       }
       onClick={onSave}
     >
       Add to shortlist
-    </Button>
-    <Button
-      kind="secondary"
-      type="button"
-      height="36px"
-      fontSize="12.5px"
-      borderColor="var(--sk-accent-subtle-strong)"
-      backgroundColor="transparent"
-      textColor="var(--sk-accent-strong)"
-      onClick={onCompare}
-    >
-      Compare
     </Button>
     <Button
       kind="primary"

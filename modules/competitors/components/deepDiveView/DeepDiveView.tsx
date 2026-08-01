@@ -1,12 +1,12 @@
 import { Box } from "@/infra/baseweb/Box";
+import { ContentTypeBreakdown } from "@/infra/components/ContentTypeBreakdown";
+import { RecentPostsCard } from "@/infra/components/RecentPostsCard";
+import { TopHashtagsCard } from "@/infra/components/TopHashtagsCard";
 import type { ColoredBrandMetrics, ColoredCompetitor } from "../../types";
 import { BioSummaryCard } from "./BioSummaryCard";
 import { CollaborationsList } from "./CollaborationsList";
 import { CompetitorPillSelector } from "./CompetitorPillSelector";
-import { ContentTypeBreakdown } from "./ContentTypeBreakdown";
-import { HashtagsPanel } from "./HashtagsPanel";
 import { OverviewCards } from "./OverviewCards";
-import { RecentPostsGrid } from "./RecentPostsGrid";
 import { useDeepDiveSelection } from "./useDeepDiveSelection";
 
 type DeepDiveViewProps = {
@@ -24,7 +24,7 @@ export const DeepDiveView = ({
     useDeepDiveSelection(activeCompetitors, allCompetitors);
 
   return (
-    <Box className="flex flex-col gap-4">
+    <Box className="flex flex-col gap-5">
       <CompetitorPillSelector
         competitors={activeCompetitors}
         activeKey={deepDiveKey}
@@ -35,15 +35,26 @@ export const DeepDiveView = ({
         competitor={activeCompetitor}
         yourBrandName={yourBrand.name}
       />
-      <Box className="grid grid-cols-[1.3fr_1fr] items-start gap-4">
-        <CollaborationsList collabs={activeCompetitor.collabs} />
-        <HashtagsPanel
-          hashtags={activeCompetitor.hashtags}
-          hashtagNote={activeCompetitor.hashtagNote}
-        />
+      <Box className="flex flex-wrap items-start gap-5">
+        <Box className="min-w-[380px] flex-[2_1_380px]">
+          <CollaborationsList collabs={activeCompetitor.collabs} />
+        </Box>
+        <Box className="min-w-[260px] flex-[1_1_300px]">
+          <TopHashtagsCard
+            hashtags={activeCompetitor.hashtags}
+            note={activeCompetitor.hashtagNote}
+          />
+        </Box>
       </Box>
-      <RecentPostsGrid competitor={activeCompetitor} />
-      <ContentTypeBreakdown competitor={activeCompetitor} />
+      <RecentPostsCard
+        posts={activeCompetitor.posts}
+        bgColor={activeCompetitor.tint}
+      />
+      <ContentTypeBreakdown
+        pctReels={activeCompetitor.pctReels}
+        pctStatic={activeCompetitor.pctStatic}
+        pctCarousel={activeCompetitor.pctCarousel}
+      />
     </Box>
   );
 };
