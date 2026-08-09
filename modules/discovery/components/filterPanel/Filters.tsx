@@ -88,8 +88,19 @@ export const Filters = ({
         checked: filterState.isVerified,
         onToggle: () => onAction({ isVerified: !filterState.isVerified }),
       },
+      {
+        key: "bookmarked",
+        label: "Bookmarked",
+        checked: filterState.bookmarked,
+        onToggle: () => onAction({ bookmarked: !filterState.bookmarked }),
+      },
     ],
-    [filterState.hasEmail, filterState.isVerified, onAction],
+    [
+      filterState.hasEmail,
+      filterState.isVerified,
+      filterState.bookmarked,
+      onAction,
+    ],
   );
 
   return (

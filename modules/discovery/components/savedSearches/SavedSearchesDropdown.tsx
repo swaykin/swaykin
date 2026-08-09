@@ -1,6 +1,6 @@
 import { Box } from "@/infra/baseweb/Box";
 import { StatefulPopover } from "@/infra/baseweb/StatefulPopover";
-import { FilterTriggerButton } from "../filterPanel/FilterTriggerButton";
+import { FilterTriggerButton } from "@/infra/components/FilterTriggerButton";
 import { SavedSearchRow } from "./SavedSearchRow";
 import type { SavedSearch } from "../../types";
 

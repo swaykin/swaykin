@@ -1,6 +1,6 @@
 import { StatefulPopover } from "@/infra/baseweb/StatefulPopover";
 import { SearchableMenu } from "@/infra/components/searchableMenu";
-import { FilterTriggerButton } from "./FilterTriggerButton";
+import { FilterTriggerButton } from "@/infra/components/FilterTriggerButton";
 
 type FilterCapsuleProps = {
   icon: string;

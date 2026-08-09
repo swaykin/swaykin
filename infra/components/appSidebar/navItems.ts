@@ -15,7 +15,7 @@ export const navItems: NavItem[] = [
   },
   {
     key: "saved",
-    label: "Saved Influencers",
+    label: "Saved Creators",
     icon: "ph-bookmark-simple",
     href: "/saved",
   },

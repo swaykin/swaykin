@@ -1,6 +1,7 @@
 export type DiscoveryFilters = {
   hasEmail: boolean;
   isVerified: boolean;
+  bookmarked: boolean;
   hashtags: string[];
   categories: string[];
   locations: string[];

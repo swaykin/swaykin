@@ -1,7 +1,8 @@
+import type { ReactNode } from "react";
 import { Box } from "@/infra/baseweb/Box";
 
 type StatTileProps = {
-  label: string;
+  label: ReactNode;
   value: string;
   valueColor?: string;
 };

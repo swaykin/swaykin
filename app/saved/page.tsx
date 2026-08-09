@@ -1,7 +1,7 @@
-import { SavedPage } from "@/modules/saved/SavedPage";
+import { Saved } from "@/modules/saved";
 
 const Page = () => {
-  return <SavedPage />;
+  return <Saved />;
 };
 
 export default Page;

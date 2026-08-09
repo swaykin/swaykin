@@ -1,5 +1,6 @@
 import type { Post } from "@/infra/components/RecentPostsCard";
 import type { Hashtag } from "@/infra/components/TopHashtagsCard";
+import type { SavedStatus } from "@/modules/saved/constants";
 
 export type InfluencerPost = Post;
 export type InfluencerHashtag = Hashtag;
@@ -45,6 +46,14 @@ export type Influencer = {
   email?: string;
   phone?: string;
   collabs?: BrandCollaboration[];
+  /** Saved Influencers page fields — literal values only on mocks pre-seeded as saved;
+   * presence of `savedDaysAgo` is the "is saved" signal, no separate isSaved boolean. */
+  lists?: string[];
+  status?: SavedStatus;
+  savedDaysAgo?: number;
+  newPostsCount?: number;
+  followerChangePct?: number;
+  erChangePts?: number;
 };
 
 export const mockInfluencers: Influencer[] = [
@@ -87,6 +96,12 @@ export const mockInfluencers: Influencer[] = [
       { brand: "The Derma Co", date: "Apr 2026", via: "Story", reach: 98000, emv: 54000, likes: 7600, comments: 190, logoColor: "var(--blue-600)" },
       { brand: "Plum Goodness", date: "Feb 2026", via: "Post", reach: 112000, emv: 61000, likes: 9100, comments: 240, logoColor: "var(--green-600)" },
     ],
+    lists: ["Q3 Skincare Candidates"],
+    status: "Contacted",
+    savedDaysAgo: 21,
+    newPostsCount: 2,
+    followerChangePct: 4.2,
+    erChangePts: 0.3,
   },
   {
     id: "meher",
@@ -122,6 +137,11 @@ export const mockInfluencers: Influencer[] = [
       { type: "Reel", icon: "ph-play", date: "10d ago", likes: 8200, comments: 210, views: 25000, caption: "Wore this for a week straight before saying anything — the honest review you asked for.", hashtags: ["makeup", "beauty", "dupealert"] },
     ],
     phone: "+91 98765 43210",
+    lists: ["Q3 Skincare Candidates", "Fashion Edit Shortlist"],
+    status: "In Discussion",
+    savedDaysAgo: 34,
+    followerChangePct: 1.1,
+    erChangePts: -0.2,
   },
   {
     id: "rhea",
@@ -196,6 +216,12 @@ export const mockInfluencers: Influencer[] = [
       { brand: "Bombay Shaving Company", date: "May 2026", via: "Reel", reach: 54000, emv: 31000, likes: 4800, comments: 140, logoColor: "var(--orange-600)" },
       { brand: "Beardo", date: "Mar 2026", via: "Post", reach: 41000, emv: 22000, likes: 3200, comments: 95, logoColor: "var(--sk-accent-strong)" },
     ],
+    lists: ["Fitness & Grooming Watch"],
+    status: "Confirmed",
+    savedDaysAgo: 12,
+    newPostsCount: 3,
+    followerChangePct: 8.9,
+    erChangePts: 0.6,
   },
   {
     id: "zara",
@@ -263,6 +289,12 @@ export const mockInfluencers: Influencer[] = [
       { type: "Carousel", icon: "ph-images", date: "8d ago", likes: 6100, comments: 330, views: 21000, caption: "Actives layering order, explained without the jargon.", hashtags: ["actives", "skincareindia", "skincare"] },
       { type: "Reel", icon: "ph-play", date: "12d ago", likes: 5600, comments: 290, views: 18000, caption: "The unglamorous truth: most 'holy grail' products just have one working ingredient.", hashtags: ["skincare", "actives", "ingredientbreakdown"] },
     ],
+    lists: ["Q3 Skincare Candidates", "Fitness & Grooming Watch"],
+    status: "Not Contacted",
+    savedDaysAgo: 9,
+    newPostsCount: 4,
+    followerChangePct: 11.0,
+    erChangePts: 0.8,
   },
   {
     id: "priya",
@@ -330,5 +362,11 @@ export const mockInfluencers: Influencer[] = [
       { type: "Reel", icon: "ph-play", date: "10d ago", likes: 4300, comments: 155, views: 14000, caption: "Outfit idea for the days you want to look put-together in under five minutes.", hashtags: ["outfitideas", "fashion", "thriftfinds"] },
       { type: "Post", icon: "ph-image", date: "3w ago", likes: 3900, comments: 135, views: 12000, caption: "Found this at a thrift haul in Kolkata for ₹150 and it's now in permanent rotation.", hashtags: ["thrift", "thriftfinds", "fashion"] },
     ],
+    lists: ["Fashion Edit Shortlist", "Fitness & Grooming Watch", "Q3 Skincare Candidates"],
+    status: "Not Contacted",
+    savedDaysAgo: 3,
+    newPostsCount: 1,
+    followerChangePct: 6.7,
+    erChangePts: 0.5,
   },
 ];

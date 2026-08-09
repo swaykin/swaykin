@@ -8,6 +8,8 @@ type IconButtonOwnProps = ButtonProps & {
   height?: string;
   width?: string;
   tooltip?: ReactNode;
+  backgroundColor?: string;
+  borderRadius?: string;
 };
 
 export const IconButton = ({
@@ -17,6 +19,8 @@ export const IconButton = ({
   width,
   tooltip,
   overrides,
+  borderRadius,
+  backgroundColor,
   ...props
 }: IconButtonOwnProps) => {
   const button = (
@@ -30,6 +34,15 @@ export const IconButton = ({
             style: {
               ...(height ? { height } : undefined),
               ...(width ? { width } : undefined),
+              ...(backgroundColor ? { backgroundColor } : undefined),
+              ...(borderRadius
+                ? {
+                    borderTopLeftRadius: borderRadius,
+                    borderTopRightRadius: borderRadius,
+                    borderBottomRightRadius: borderRadius,
+                    borderBottomLeftRadius: borderRadius,
+                  }
+                : undefined),
             },
           },
         }),

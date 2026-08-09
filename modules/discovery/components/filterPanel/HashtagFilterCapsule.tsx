@@ -1,5 +1,5 @@
 import { StatefulPopover } from "@/infra/baseweb/StatefulPopover";
-import { FilterTriggerButton } from "./FilterTriggerButton";
+import { FilterTriggerButton } from "@/infra/components/FilterTriggerButton";
 import { HashtagFilterMenu } from "./HashtagFilterMenu";
 
 type HashtagFilterCapsuleProps = {

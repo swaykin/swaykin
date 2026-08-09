@@ -24,7 +24,9 @@ export const CheckmarkGlyph = ({
       backgroundColor: checked ? color : "transparent",
     }}
   >
-    {checked && <Icon name="ph-check" weight="bold" size={10} color={iconColor} />}
+    {checked && (
+      <Icon name="ph-check-fat" weight="fill" size={10} color={iconColor} />
+    )}
   </Box>
 );
 
@@ -40,7 +42,13 @@ const IconCheckmark = ({
 }: {
   $checked?: boolean;
   backgroundColor: string;
-}) => <CheckmarkGlyph checked={$checked} color={backgroundColor} iconColor="var(--sk-accent-on)" />;
+}) => (
+  <CheckmarkGlyph
+    checked={$checked}
+    color={backgroundColor}
+    iconColor="var(--sk-accent-on)"
+  />
+);
 
 type CheckboxOwnProps = CheckboxProps & {
   /** Swaps in the CheckmarkGlyph above instead of Base Web's default checkmark. */

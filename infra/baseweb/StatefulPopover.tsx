@@ -6,7 +6,7 @@ import {
 
 // Matches the design's dropdown z-index (AppTopBar.dc.html) — must clear the
 // sticky topbar's z-20 so menus anchored in it never render underneath it.
-const POPOVER_Z_INDEX = 30;
+const POPOVER_Z_INDEX = 40;
 
 export const StatefulPopover = ({
   overrides,

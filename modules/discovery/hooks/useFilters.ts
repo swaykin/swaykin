@@ -7,6 +7,7 @@ const FILTERS_STORAGE_KEY = "discovery.appliedFilters";
 const EMPTY_FILTERS: DiscoveryFilters = {
   hasEmail: false,
   isVerified: false,
+  bookmarked: false,
   hashtags: [],
   categories: [],
   locations: [],
