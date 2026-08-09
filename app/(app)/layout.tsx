@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { AuthGate } from "@/providers/AuthGate";
 import { BaseWebProvider } from "@/providers/BaseWebProvider";
 import { WorkspaceProvider } from "@/providers/WorkspaceProvider";
 import { UserProvider } from "@/providers/UserProvider";
@@ -17,21 +18,23 @@ const RootLayout = ({ children }: { children: ReactNode }) => {
   return (
     <html lang="en">
       <body>
-        <WorkspaceProvider>
-          <UserProvider>
-            <BaseWebProvider>
-              <Box className="flex min-h-screen bg-page">
-                <AppSidebar />
-                <Box className="flex min-w-0 flex-1 flex-col">
-                  <AppTopBar />
-                  <Box as="main" className="min-w-0 flex-1">
-                    {children}
+        <AuthGate require="authenticated" redirectTo="/login">
+          <WorkspaceProvider>
+            <UserProvider>
+              <BaseWebProvider>
+                <Box className="flex min-h-screen bg-page">
+                  <AppSidebar />
+                  <Box className="flex min-w-0 flex-1 flex-col">
+                    <AppTopBar />
+                    <Box as="main" className="min-w-0 flex-1">
+                      {children}
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
-            </BaseWebProvider>
-          </UserProvider>
-        </WorkspaceProvider>
+              </BaseWebProvider>
+            </UserProvider>
+          </WorkspaceProvider>
+        </AuthGate>
       </body>
     </html>
   );
