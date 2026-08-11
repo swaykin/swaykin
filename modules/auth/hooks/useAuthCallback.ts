@@ -48,7 +48,7 @@ export const useAuthCallback = () => {
 
     signInWithCustomToken(auth, token)
       .then(() => {
-        router.replace(intent === "signup" ? "/signup?complete=1" : "/");
+        router.replace(intent === "signup" ? "/?onboarding=1" : "/");
       })
       .catch(() => redirectToFailure(null));
   }, [router, intent]);

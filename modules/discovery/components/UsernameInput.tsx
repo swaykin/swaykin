@@ -9,18 +9,13 @@ import { Input } from "@/infra/baseweb/Input";
 // Root's own padding is fixed at 0 unconditionally (rather than left as Base Web's
 // enhancer-derived default) so it holds regardless of whether the clear icon is present — Input
 // additionally reserves its own 14px on both sides regardless of enhancer presence, so that
-// needs resetting too. The 8px gap to the input text lives on each enhancer's inner edge only,
+// needs resetting too. The 8px gap to the input text lives on the enhancer's inner edge only,
 // flush against Root on the outer edge. Scoped to this component only — not a shared concern.
 const LOOKUP_INPUT_OVERRIDES = {
   Root: {
     style: {
       paddingLeft: "8px",
       paddingRight: "8px",
-    },
-  },
-  StartEnhancer: {
-    style: {
-      paddingRight: "0px",
     },
   },
   Input: {
@@ -43,6 +38,7 @@ export const UsernameInput = () => {
       </Box>
       <Box className="max-w-[420px] flex-1">
         <Input
+          type="userName"
           value={query}
           onChange={(e) => setQuery(e.currentTarget.value)}
           placeholder="exact instagram username"
@@ -51,11 +47,6 @@ export const UsernameInput = () => {
           borderColor="var(--sk-border-strong)"
           fontSize="13px"
           overrides={LOOKUP_INPUT_OVERRIDES}
-          startEnhancer={() => (
-            <Box as="span" className="text-md font-bold text-text-tertiary">
-              @
-            </Box>
-          )}
           endEnhancer={
             query
               ? () => (

@@ -1,21 +1,33 @@
 import { useCallback, useMemo, useState } from "react";
+import type { BrandProfile } from "../types";
+
+const EMPTY_BRAND_PROFILE: BrandProfile = {
+  brandName: "",
+  instagramHandle: "",
+  industry: "",
+  website: "",
+  description: "",
+  brandVoice: "",
+  targetAudience: "",
+};
 
 export const useBrandProfileForm = (onComplete: () => void) => {
-  const [brandName, setBrandName] = useState("");
-  const [instagramHandle, setInstagramHandle] = useState("");
-  const [industry, setIndustry] = useState("");
-  const [website, setWebsite] = useState("");
-  const [description, setDescription] = useState("");
-  const [brandVoice, setBrandVoice] = useState("");
-  const [targetAudience, setTargetAudience] = useState("");
+  const [brandProfile, setBrandProfile] =
+    useState<BrandProfile>(EMPTY_BRAND_PROFILE);
 
-  const handleInstagramHandleChange = useCallback((value: string) => {
-    setInstagramHandle(value.replace(/^@/, ""));
+  const onAction = useCallback((patch: Partial<BrandProfile>) => {
+    const normalized =
+      patch.instagramHandle !== undefined
+        ? { ...patch, instagramHandle: patch.instagramHandle.replace(/^@/, "") }
+        : patch;
+    setBrandProfile((prev) => ({ ...prev, ...normalized }));
   }, []);
 
   const canContinue = useMemo(
-    () => brandName.trim().length > 0 && instagramHandle.trim().length > 0,
-    [brandName, instagramHandle],
+    () =>
+      brandProfile.brandName.trim().length > 0 &&
+      brandProfile.instagramHandle.trim().length > 0,
+    [brandProfile.brandName, brandProfile.instagramHandle],
   );
 
   const submit = useCallback(() => {
@@ -23,22 +35,5 @@ export const useBrandProfileForm = (onComplete: () => void) => {
     onComplete();
   }, [canContinue, onComplete]);
 
-  return {
-    brandName,
-    setBrandName,
-    instagramHandle,
-    handleInstagramHandleChange,
-    industry,
-    setIndustry,
-    website,
-    setWebsite,
-    description,
-    setDescription,
-    brandVoice,
-    setBrandVoice,
-    targetAudience,
-    setTargetAudience,
-    canContinue,
-    submit,
-  };
+  return { brandProfile, setBrandProfile, onAction, canContinue, submit };
 };

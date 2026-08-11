@@ -29,9 +29,10 @@ export const AddCompetitorControl = ({
       {showAddInput ? (
         <Box className="inline-flex items-center gap-1.5">
           <Input
+            type="userName"
             value={newHandle}
             onChange={(e) => setNewHandle(e.target.value)}
-            placeholder="e.g. @wow_skinscience"
+            placeholder="wow_skinscience"
             size="compact"
             width="190px"
             height="32px"

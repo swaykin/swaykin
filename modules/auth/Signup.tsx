@@ -1,14 +1,11 @@
 import { Box } from "@/infra/baseweb/Box";
 import { AuthCard } from "./components/AuthCard";
 import { AuthLogo } from "./components/AuthLogo";
-import { BrandProfileModal } from "./components/BrandProfileModal";
 import { GoogleButton } from "./components/GoogleButton";
 import { useAuthErrorParam } from "./hooks/useAuthErrorParam";
-import { useSignupForm } from "./hooks/useSignupForm";
 import { startGoogleSignIn } from "./utils";
 
 const Signup = () => {
-  const { showProfileModal, closeProfileModal } = useSignupForm();
   const error = useAuthErrorParam("/signup");
 
   return (
@@ -41,12 +38,6 @@ const Signup = () => {
           </Box>
         </Box>
       </Box>
-
-      <BrandProfileModal
-        isOpen={showProfileModal}
-        onClose={closeProfileModal}
-        onComplete={closeProfileModal}
-      />
     </Box>
   );
 };

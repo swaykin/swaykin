@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
-import { AuthGate } from "@/providers/AuthGate";
+import { Suspense, type ReactNode } from "react";
+// import { AuthGate } from "@/providers/AuthGate";
 import { BaseWebProvider } from "@/providers/BaseWebProvider";
+import { OnboardingGate } from "@/providers/OnboardingGate";
 import { WorkspaceProvider } from "@/providers/WorkspaceProvider";
 import { UserProvider } from "@/providers/UserProvider";
 import { Box } from "@/infra/baseweb/Box";
@@ -18,23 +19,26 @@ const RootLayout = ({ children }: { children: ReactNode }) => {
   return (
     <html lang="en">
       <body>
-        <AuthGate require="authenticated" redirectTo="/login">
-          <WorkspaceProvider>
-            <UserProvider>
-              <BaseWebProvider>
-                <Box className="flex min-h-screen bg-page">
-                  <AppSidebar />
-                  <Box className="flex min-w-0 flex-1 flex-col">
-                    <AppTopBar />
-                    <Box as="main" className="min-w-0 flex-1">
-                      {children}
+        {/* AuthGate temporarily disabled during active dev — re-enable require="authenticated" redirectTo="/login" before shipping */}
+        <WorkspaceProvider>
+          <UserProvider>
+            <BaseWebProvider>
+              <Suspense fallback={null}>
+                <OnboardingGate>
+                  <Box className="flex min-h-screen bg-page">
+                    <AppSidebar />
+                    <Box className="flex min-w-0 flex-1 flex-col">
+                      <AppTopBar />
+                      <Box as="main" className="min-w-0 flex-1">
+                        {children}
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              </BaseWebProvider>
-            </UserProvider>
-          </WorkspaceProvider>
-        </AuthGate>
+                </OnboardingGate>
+              </Suspense>
+            </BaseWebProvider>
+          </UserProvider>
+        </WorkspaceProvider>
       </body>
     </html>
   );
