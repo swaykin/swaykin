@@ -16,11 +16,7 @@ export const useBrandProfileForm = (onComplete: () => void) => {
     useState<BrandProfile>(EMPTY_BRAND_PROFILE);
 
   const onAction = useCallback((patch: Partial<BrandProfile>) => {
-    const normalized =
-      patch.instagramHandle !== undefined
-        ? { ...patch, instagramHandle: patch.instagramHandle.replace(/^@/, "") }
-        : patch;
-    setBrandProfile((prev) => ({ ...prev, ...normalized }));
+    setBrandProfile((prev) => ({ ...prev, ...patch }));
   }, []);
 
   const canContinue = useMemo(

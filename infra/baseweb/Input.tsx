@@ -2,6 +2,7 @@ import { mergeOverrides } from "baseui";
 import {
   Input as BaseInput,
   type InputProps as InputPropsType,
+  type SharedProps,
 } from "baseui/input";
 import { Box } from "./Box";
 import { Icon } from "./Icon";
@@ -17,7 +18,7 @@ export type InputProps = Omit<InputPropsType, "type"> & {
   fontSize?: string;
 };
 
-const UserNameEnhancer = ({ size }: { size: string }) => (
+const UserNameEnhancer = ({ size }: { size?: string }) => (
   <Box className="flex items-center">
     <Icon
       name="ph-instagram-logo"
@@ -61,39 +62,44 @@ export const Input = ({
       overrides={mergeOverrides(
         {
           Root: {
-            style: {
-              ...(height ? { height } : undefined),
-              ...(width ? { width } : undefined),
-              ...(borderRadius
-                ? {
-                    borderTopLeftRadius: borderRadius,
-                    borderTopRightRadius: borderRadius,
-                    borderBottomRightRadius: borderRadius,
-                    borderBottomLeftRadius: borderRadius,
-                  }
-                : undefined),
-              ...(borderWidth
-                ? {
-                    borderTopWidth: borderWidth,
-                    borderBottomWidth: borderWidth,
-                    borderLeftWidth: borderWidth,
-                    borderRightWidth: borderWidth,
-                  }
-                : undefined),
-              ...(borderColor
-                ? {
-                    borderTopColor: borderColor,
-                    borderBottomColor: borderColor,
-                    borderLeftColor: borderColor,
-                    borderRightColor: borderColor,
-                  }
-                : undefined),
-              ...(backgroundColor ? { backgroundColor } : undefined),
-              // Base Web's Root keeps its own left/right inset even when an enhancer already
-              // supplies one, doubling up the gap to the icon — drop the Root side once an
-              // enhancer takes over that side.
-              ...(resolvedStartEnhancer ? { paddingLeft: 0 } : undefined),
-              ...(endEnhancer ? { paddingRight: 0 } : undefined),
+            style: ({ $isFocused }: SharedProps) => {
+              const activeBorderColor = $isFocused
+                ? "var(--sk-accent)"
+                : borderColor;
+              return {
+                ...(height ? { height } : undefined),
+                ...(width ? { width } : undefined),
+                ...(borderRadius
+                  ? {
+                      borderTopLeftRadius: borderRadius,
+                      borderTopRightRadius: borderRadius,
+                      borderBottomRightRadius: borderRadius,
+                      borderBottomLeftRadius: borderRadius,
+                    }
+                  : undefined),
+                ...(borderWidth
+                  ? {
+                      borderTopWidth: borderWidth,
+                      borderBottomWidth: borderWidth,
+                      borderLeftWidth: borderWidth,
+                      borderRightWidth: borderWidth,
+                    }
+                  : undefined),
+                ...(activeBorderColor
+                  ? {
+                      borderTopColor: activeBorderColor,
+                      borderBottomColor: activeBorderColor,
+                      borderLeftColor: activeBorderColor,
+                      borderRightColor: activeBorderColor,
+                    }
+                  : undefined),
+                ...(backgroundColor ? { backgroundColor } : undefined),
+                // Base Web's Root keeps its own left/right inset even when an enhancer already
+                // supplies one, doubling up the gap to the icon — drop the Root side once an
+                // enhancer takes over that side.
+                ...(resolvedStartEnhancer ? { paddingLeft: 0 } : undefined),
+                ...(endEnhancer ? { paddingRight: 0 } : undefined),
+              };
             },
           },
           // Base Web's InputContainer/StartEnhancer/EndEnhancer each paint their own opaque

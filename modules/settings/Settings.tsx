@@ -1,12 +1,25 @@
 import { Box } from "@/infra/baseweb/Box";
 import { PageHeader } from "@/infra/components/PageHeader";
 import { SettingsTabs } from "./components/SettingsTabs";
-import { WorkspaceTab } from "./components/workspaceTab/WorkspaceTab";
-import { SETTINGS_TABS } from "./constants";
+import { BillingTab } from "./components/billingTab";
+import { CreditsTab } from "./components/creditsTab";
+import { ProfileTab } from "./components/profileTab";
+import { TeamMembersTab } from "./components/teamMembersTab";
+import { WorkspaceTab } from "./components/workspaceTab";
 import { useSettingsTabs } from "./hooks/useSettingsTabs";
+import type { SettingsTabKey } from "./constants";
+
+const SETTINGS_TAB_PANELS: Record<SettingsTabKey, () => React.JSX.Element> = {
+  profile: ProfileTab,
+  workspace: WorkspaceTab,
+  team: TeamMembersTab,
+  credits: CreditsTab,
+  billing: BillingTab,
+};
 
 const Settings = () => {
-  const { tab, setTab } = useSettingsTabs();
+  const { tab, onTabChange } = useSettingsTabs();
+  const TabPanel = SETTINGS_TAB_PANELS[tab];
 
   return (
     <Box>
@@ -15,15 +28,9 @@ const Settings = () => {
         description="Manage your workspace, team and billing preferences."
       />
       <Box className="px-7">
-        <SettingsTabs tab={tab} setTab={setTab} />
+        <SettingsTabs tab={tab} onTabChange={onTabChange} />
         <Box className="pb-5">
-          {tab === "workspace" ? (
-            <WorkspaceTab />
-          ) : (
-            <Box className="py-16 text-center text-[13px] text-text-tertiary">
-              {SETTINGS_TABS.find((t) => t.key === tab)?.label} — coming soon
-            </Box>
-          )}
+          <TabPanel />
         </Box>
       </Box>
     </Box>

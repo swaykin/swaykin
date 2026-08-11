@@ -12,7 +12,9 @@ import { useCompetitorState } from "./hooks/useCompetitorState";
 
 const Competitors = () => {
   const { tab, setTab, competitors, yourBrand, alerts } = useCompetitorState();
-  const { maxTrackedCompetitors } = useWorkspace();
+  const {
+    workspace: { maxTrackedCompetitors },
+  } = useWorkspace();
   const removal = useCompetitorRemoval(competitors);
 
   const activeCompetitors = useMemo(

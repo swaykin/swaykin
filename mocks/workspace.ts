@@ -4,6 +4,7 @@ export type Workspace = {
   name: string;
   type: string;
   credits: number;
+  creditsUsedThisMonth: number;
   maxTrackedCompetitors: number;
   maxTrackedCreators: number;
   brandProfile: BrandProfile;
@@ -13,6 +14,7 @@ export const mockWorkspace: Workspace = {
   name: "Nova Beauty Co.",
   type: "D2C Brand",
   credits: 1240,
+  creditsUsedThisMonth: 360,
   maxTrackedCompetitors: 10,
   maxTrackedCreators: 50,
   brandProfile: {

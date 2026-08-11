@@ -1,15 +1,34 @@
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useCallback, useState, useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SETTINGS_TABS, type SettingsTabKey } from "../constants";
 
-const isSettingsTabKey = (value: string | null): value is SettingsTabKey =>
-  SETTINGS_TABS.some((t) => t.key === value);
+const getSettingsTabKey = (value: string | null): SettingsTabKey =>
+  SETTINGS_TABS.some((t) => t.key === value)
+    ? (value as SettingsTabKey)
+    : "profile";
 
 export const useSettingsTabs = () => {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
   const [tab, setTab] = useState<SettingsTabKey>(
-    isSettingsTabKey(requestedTab) ? requestedTab : "profile",
+    getSettingsTabKey(requestedTab),
   );
-  return { tab, setTab };
+
+  useEffect(() => {
+    setTab(getSettingsTabKey(requestedTab));
+  }, [requestedTab]);
+
+  const onTabChange = useCallback(
+    (nextTab: SettingsTabKey) => {
+      const params = new URLSearchParams(searchParams);
+      params.set("tab", nextTab);
+      router.replace(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
+  return { tab, onTabChange };
 };

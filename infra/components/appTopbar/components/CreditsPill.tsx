@@ -4,11 +4,11 @@ import { Icon } from "@/infra/baseweb/Icon";
 import { useWorkspace } from "@/hooks/useWorkspace";
 
 export const CreditsPill = () => {
-  const workspace = useWorkspace();
+  const { workspace } = useWorkspace();
 
   return (
     <Link
-      href="/settings"
+      href="/settings?tab=credits"
       className="text-[11.5px] text-text-tertiary no-underline"
     >
       <Box className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-sunken px-2.5">

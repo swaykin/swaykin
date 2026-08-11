@@ -2,6 +2,7 @@ import { mergeOverrides } from "baseui";
 import {
   Textarea as BaseTextarea,
   type TextareaProps as TextareaPropsType,
+  type SharedStyleProps,
 } from "baseui/textarea";
 
 export type TextareaProps = TextareaPropsType & {
@@ -29,34 +30,39 @@ export const Textarea = ({
     overrides={mergeOverrides(
       {
         Root: {
-          style: {
-            ...(height ? { height } : undefined),
-            ...(width ? { width } : undefined),
-            ...(borderRadius
-              ? {
-                  borderTopLeftRadius: borderRadius,
-                  borderTopRightRadius: borderRadius,
-                  borderBottomRightRadius: borderRadius,
-                  borderBottomLeftRadius: borderRadius,
-                }
-              : undefined),
-            ...(borderWidth
-              ? {
-                  borderTopWidth: borderWidth,
-                  borderBottomWidth: borderWidth,
-                  borderLeftWidth: borderWidth,
-                  borderRightWidth: borderWidth,
-                }
-              : undefined),
-            ...(borderColor
-              ? {
-                  borderTopColor: borderColor,
-                  borderBottomColor: borderColor,
-                  borderLeftColor: borderColor,
-                  borderRightColor: borderColor,
-                }
-              : undefined),
-            ...(backgroundColor ? { backgroundColor } : undefined),
+          style: ({ $isFocused }: SharedStyleProps) => {
+            const activeBorderColor = $isFocused
+              ? "var(--sk-accent)"
+              : borderColor;
+            return {
+              ...(height ? { height } : undefined),
+              ...(width ? { width } : undefined),
+              ...(borderRadius
+                ? {
+                    borderTopLeftRadius: borderRadius,
+                    borderTopRightRadius: borderRadius,
+                    borderBottomRightRadius: borderRadius,
+                    borderBottomLeftRadius: borderRadius,
+                  }
+                : undefined),
+              ...(borderWidth
+                ? {
+                    borderTopWidth: borderWidth,
+                    borderBottomWidth: borderWidth,
+                    borderLeftWidth: borderWidth,
+                    borderRightWidth: borderWidth,
+                  }
+                : undefined),
+              ...(activeBorderColor
+                ? {
+                    borderTopColor: activeBorderColor,
+                    borderBottomColor: activeBorderColor,
+                    borderLeftColor: activeBorderColor,
+                    borderRightColor: activeBorderColor,
+                  }
+                : undefined),
+              ...(backgroundColor ? { backgroundColor } : undefined),
+            };
           },
         },
         // Base Web's InputContainer paints its own opaque background on top of Root, so a

@@ -1,23 +1,20 @@
 import { useCallback, useState } from "react";
-import { mockWorkspace } from "@/mocks/workspace";
+import { useWorkspace } from "@/hooks/useWorkspace";
 import type { BrandProfile } from "@/modules/auth/types";
 
 export const useWorkspaceForm = () => {
+  const { workspace, onUpdateWorkspace } = useWorkspace();
   const [brandProfile, setBrandProfile] = useState<BrandProfile>(
-    mockWorkspace.brandProfile,
+    workspace.brandProfile,
   );
 
   const onAction = useCallback((patch: Partial<BrandProfile>) => {
-    const normalized =
-      patch.instagramHandle !== undefined
-        ? { ...patch, instagramHandle: patch.instagramHandle.replace(/^@/, "") }
-        : patch;
-    setBrandProfile((prev) => ({ ...prev, ...normalized }));
+    setBrandProfile((prev) => ({ ...prev, ...patch }));
   }, []);
 
   const save = useCallback(() => {
-    // No backend yet — local-only edit for now.
-  }, []);
+    onUpdateWorkspace({ brandProfile });
+  }, [brandProfile, onUpdateWorkspace]);
 
   return { brandProfile, onAction, save };
 };

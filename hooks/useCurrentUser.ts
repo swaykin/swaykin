@@ -2,9 +2,9 @@ import { useContext } from "react";
 import { UserContext } from "@/providers/UserProvider";
 
 export const useCurrentUser = () => {
-  const user = useContext(UserContext);
-  if (!user) {
+  const ctx = useContext(UserContext);
+  if (!ctx) {
     throw new Error("useCurrentUser must be used within a UserProvider");
   }
-  return user;
+  return ctx;
 };

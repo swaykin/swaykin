@@ -13,9 +13,7 @@ export const useAddCompetitorForm = () => {
       onError("Enter an Instagram handle to track.");
       return;
     }
-    onSuccess(
-      `Tracking @${newHandle.replace("@", "")} — crunching their last 90 days of data…`,
-    );
+    onSuccess(`Tracking @${newHandle} — crunching their last 90 days of data…`);
     setNewHandle("");
     setShowAddInput(false);
   }, [newHandle, onError, onSuccess]);

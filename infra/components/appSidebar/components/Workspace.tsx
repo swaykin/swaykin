@@ -14,7 +14,7 @@ const AVATAR_OVERRIDES = {
 };
 
 export const Workspace = () => {
-  const workspace = useWorkspace();
+  const { workspace } = useWorkspace();
   return (
     <Box className="mx-3 mb-2.5 flex items-center gap-2.5 rounded-[10px] border border-border bg-sunken px-2.5 py-2">
       <Avatar

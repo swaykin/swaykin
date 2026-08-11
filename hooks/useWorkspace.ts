@@ -2,9 +2,9 @@ import { useContext } from "react";
 import { WorkspaceContext } from "@/providers/WorkspaceProvider";
 
 export const useWorkspace = () => {
-  const workspace = useContext(WorkspaceContext);
-  if (!workspace) {
+  const ctx = useContext(WorkspaceContext);
+  if (!ctx) {
     throw new Error("useWorkspace must be used within a WorkspaceProvider");
   }
-  return workspace;
+  return ctx;
 };

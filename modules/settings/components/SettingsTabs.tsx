@@ -4,13 +4,13 @@ import { SETTINGS_TABS, type SettingsTabKey } from "../constants";
 
 type SettingsTabsProps = {
   tab: SettingsTabKey;
-  setTab: (tab: SettingsTabKey) => void;
+  onTabChange: (tab: SettingsTabKey) => void;
 };
 
-export const SettingsTabs = ({ tab, setTab }: SettingsTabsProps) => (
+export const SettingsTabs = ({ tab, onTabChange }: SettingsTabsProps) => (
   <Tabs
     activeKey={tab}
-    onChange={({ activeKey }) => setTab(activeKey as SettingsTabKey)}
+    onChange={({ activeKey }) => onTabChange(activeKey as SettingsTabKey)}
   >
     {SETTINGS_TABS.map((t) => (
       <Tab
