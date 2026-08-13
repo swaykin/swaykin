@@ -3,6 +3,7 @@
 import { useCallback, type ReactNode } from "react";
 import { api } from "@/lib/api";
 import { useQuery } from "@/lib/api/useQuery";
+import { AppTombstone } from "@/infra/components/AppTombstone";
 import type { User } from "@/types/user";
 import type { Workspace } from "@/types/workspace";
 import {
@@ -49,7 +50,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     [workspace, setWorkspace],
   );
 
-  if (!user || !workspace) return null;
+  if (!user || !workspace) return <AppTombstone />;
 
   return (
     <WorkspaceContext.Provider value={{ workspace, onUpdateWorkspace }}>

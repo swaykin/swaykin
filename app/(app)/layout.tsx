@@ -7,6 +7,7 @@ import { AppDataProvider } from "@/providers/AppDataProvider";
 import { Box } from "@/infra/baseweb/Box";
 import { AppSidebar } from "@/infra/components/appSidebar";
 import { AppTopBar } from "@/infra/components/appTopbar";
+import { AppTombstone } from "@/infra/components/AppTombstone";
 import "../globals.css";
 
 export const metadata: Metadata = {
@@ -18,7 +19,11 @@ const RootLayout = ({ children }: { children: ReactNode }) => {
   return (
     <html lang="en">
       <body>
-        <AuthGate require="authenticated" redirectTo="/login">
+        <AuthGate
+          require="authenticated"
+          redirectTo="/login"
+          fallback={<AppTombstone />}
+        >
           <BaseWebProvider>
             <AppDataProvider>
               <Suspense fallback={null}>

@@ -7,10 +7,16 @@ import { useFirebaseUser } from "@/hooks/useFirebaseUser";
 type AuthGateProps = {
   require: "authenticated" | "unauthenticated";
   redirectTo: string;
+  fallback?: ReactNode;
   children: ReactNode;
 };
 
-export const AuthGate = ({ require, redirectTo, children }: AuthGateProps) => {
+export const AuthGate = ({
+  require,
+  redirectTo,
+  fallback = null,
+  children,
+}: AuthGateProps) => {
   const { user, loading } = useFirebaseUser();
   const router = useRouter();
   const satisfied = require === "authenticated" ? !!user : !user;
@@ -21,5 +27,5 @@ export const AuthGate = ({ require, redirectTo, children }: AuthGateProps) => {
     }
   }, [loading, satisfied, redirectTo, router]);
 
-  return !loading && satisfied ? <>{children}</> : null;
+  return !loading && satisfied ? <>{children}</> : fallback;
 };
