@@ -41,6 +41,7 @@ export const skTheme = createLightTheme({
     borderAccent: "var(--sk-accent)",
 
     buttonPrimaryFill: "var(--sk-accent)",
+    buttonPrimaryLoadingFill: "var(--sk-accent)",
     buttonPrimaryText: "var(--sk-accent-on)",
     buttonPrimaryHover: "var(--sk-accent-hover)",
     buttonPrimaryActive: "var(--sk-accent-strong)",

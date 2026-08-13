@@ -2,22 +2,24 @@ import { Box } from "@/infra/baseweb/Box";
 import { FormControl } from "@/infra/baseweb/FormControl";
 import { Icon } from "@/infra/baseweb/Icon";
 import { Textarea } from "@/infra/baseweb/Textarea";
-import type { BrandProfile } from "@/modules/auth/types";
+import type { WorkspaceDetails } from "@/types/workspace";
 import { FormInput } from "./FormInput";
 
 const LABEL_STYLE = { fontSize: "12.5px", fontWeight: 600, color: "var(--sk-text)" };
 
+type BrandProfileFormState = WorkspaceDetails & { name: string };
+
 type BrandProfileFieldsProps = {
   subtitle: string;
-  brandProfile: BrandProfile;
-  onAction: (patch: Partial<BrandProfile>) => void;
+  details: BrandProfileFormState;
+  onAction: (patch: Partial<BrandProfileFormState>) => void;
 };
 
 /** The Brand Profile form body — shared by the post-signup onboarding modal and the Workspace
  * settings tab, since both edit the same underlying data with the same field set. */
 export const BrandProfileFields = ({
   subtitle,
-  brandProfile,
+  details,
   onAction,
 }: BrandProfileFieldsProps) => (
   <>
@@ -37,20 +39,20 @@ export const BrandProfileFields = ({
     </Box>
 
     <FormInput
-      id="brandName"
+      id="name"
       label="Brand name"
       required
-      value={brandProfile.brandName}
+      value={details.name}
       onAction={onAction}
       placeholder="e.g. Nova Beauty Co."
       backgroundColor="var(--sk-surface-sunken)"
     />
     <FormInput
-      id="instagramHandle"
+      id="igusername"
       label="Instagram handle"
       required
       type="userName"
-      value={brandProfile.instagramHandle}
+      value={details.igusername}
       onAction={onAction}
       placeholder="yourbrand"
       backgroundColor="var(--sk-surface-sunken)"
@@ -69,7 +71,7 @@ export const BrandProfileFields = ({
         className="flex-1"
         id="industry"
         label="Industry"
-        value={brandProfile.industry}
+        value={details.industry}
         onAction={onAction}
         placeholder="Beauty, D2C, SaaS…"
       />
@@ -77,7 +79,7 @@ export const BrandProfileFields = ({
         className="flex-1"
         id="website"
         label="Website"
-        value={brandProfile.website}
+        value={details.website}
         onAction={onAction}
         placeholder="yourbrand.com"
         startEnhancer={() => (
@@ -95,8 +97,8 @@ export const BrandProfileFields = ({
         }}
       >
         <Textarea
-          value={brandProfile.description}
-          onChange={(e) => onAction({ description: e.target.value })}
+          value={details.descriptions}
+          onChange={(e) => onAction({ descriptions: e.target.value })}
           placeholder="A one-paragraph summary of your product, audience, and edge."
           overrides={{ Input: { style: { minHeight: "72px" } } }}
           size="compact"
@@ -107,17 +109,17 @@ export const BrandProfileFields = ({
     <Box className="flex gap-3.5">
       <FormInput
         className="flex-1"
-        id="brandVoice"
+        id="voice"
         label="Brand voice"
-        value={brandProfile.brandVoice}
+        value={details.voice}
         onAction={onAction}
         placeholder="Warm, playful, authoritative…"
       />
       <FormInput
         className="flex-1"
-        id="targetAudience"
+        id="audience"
         label="Target audience"
-        value={brandProfile.targetAudience}
+        value={details.audience}
         onAction={onAction}
         placeholder="e.g. 25–34 women in Tier-1 Indian cities"
       />

@@ -7,14 +7,14 @@ import { useWorkspaceForm } from "../../hooks/useWorkspaceForm";
 // const USED_FOR = ["Outreach drafts", "Creator scoring", "Competitor analysis"];
 
 export const BrandProfileCard = () => {
-  const { brandProfile, onAction, save } = useWorkspaceForm();
+  const { details, onAction, save, isSaving } = useWorkspaceForm();
 
   return (
     <Box className="rounded-2xl border border-border bg-surface pt-3 pb-6 px-7 shadow-card">
       <Box className="flex flex-col gap-2">
         <BrandProfileFields
           subtitle="Context SwayKin uses to draft outreach, score creators, and tailor recommendations."
-          brandProfile={brandProfile}
+          details={details}
           onAction={onAction}
         />
 
@@ -29,8 +29,14 @@ export const BrandProfileCard = () => {
       </Box>
 
       <Box className="mt-5 flex justify-end gap-2 border-t border-border pt-5">
-        <Button kind="primary" height="36px" onClick={save}>
-          Save changes
+        <Button
+          kind="primary"
+          height="36px"
+          width="80px"
+          onClick={save}
+          isLoading={isSaving}
+        >
+          Save
         </Button>
       </Box>
     </Box>

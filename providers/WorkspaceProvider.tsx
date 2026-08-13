@@ -1,27 +1,24 @@
 "use client";
 
-import { createContext, useCallback, useState, type ReactNode } from "react";
-import { mockWorkspace, type Workspace } from "@/mocks/workspace";
+import { createContext, useContext } from "react";
+import type { Workspace, WorkspaceDetails } from "@/types/workspace";
+
+export type UpdateWorkspacePayload = WorkspaceDetails &
+  Pick<Workspace, "name" | "logoUrl">;
 
 export type WorkspaceContextValue = {
   workspace: Workspace;
-  onUpdateWorkspace: (patch: Partial<Workspace>) => void;
+  onUpdateWorkspace: (patch: Partial<UpdateWorkspacePayload>) => Promise<void>;
 };
 
 export const WorkspaceContext = createContext<WorkspaceContextValue | null>(
   null,
 );
 
-export const WorkspaceProvider = ({ children }: { children: ReactNode }) => {
-  const [workspace, setWorkspace] = useState<Workspace>(mockWorkspace);
-
-  const onUpdateWorkspace = useCallback((patch: Partial<Workspace>) => {
-    setWorkspace((prev) => ({ ...prev, ...patch }));
-  }, []);
-
-  return (
-    <WorkspaceContext.Provider value={{ workspace, onUpdateWorkspace }}>
-      {children}
-    </WorkspaceContext.Provider>
-  );
+export const useWorkspaceContext = () => {
+  const ctx = useContext(WorkspaceContext);
+  if (!ctx) {
+    throw new Error("useWorkspaceContext must be used within a WorkspaceProvider");
+  }
+  return ctx;
 };

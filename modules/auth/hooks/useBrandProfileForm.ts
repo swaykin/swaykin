@@ -1,29 +1,30 @@
 import { useCallback, useMemo, useState } from "react";
-import type { BrandProfile } from "../types";
+import type { WorkspaceDetails } from "@/types/workspace";
 
-const EMPTY_BRAND_PROFILE: BrandProfile = {
-  brandName: "",
-  instagramHandle: "",
+type BrandProfileFormState = WorkspaceDetails & { name: string };
+
+const EMPTY_BRAND_PROFILE: BrandProfileFormState = {
+  name: "",
+  igusername: "",
   industry: "",
   website: "",
-  description: "",
-  brandVoice: "",
-  targetAudience: "",
+  descriptions: "",
+  voice: "",
+  audience: "",
 };
 
 export const useBrandProfileForm = (onComplete: () => void) => {
-  const [brandProfile, setBrandProfile] =
-    useState<BrandProfile>(EMPTY_BRAND_PROFILE);
+  const [details, setDetails] = useState<BrandProfileFormState>(
+    EMPTY_BRAND_PROFILE,
+  );
 
-  const onAction = useCallback((patch: Partial<BrandProfile>) => {
-    setBrandProfile((prev) => ({ ...prev, ...patch }));
+  const onAction = useCallback((patch: Partial<BrandProfileFormState>) => {
+    setDetails((prev) => ({ ...prev, ...patch }));
   }, []);
 
   const canContinue = useMemo(
-    () =>
-      brandProfile.brandName.trim().length > 0 &&
-      brandProfile.instagramHandle.trim().length > 0,
-    [brandProfile.brandName, brandProfile.instagramHandle],
+    () => details.name.trim().length > 0 && details.igusername.trim().length > 0,
+    [details.name, details.igusername],
   );
 
   const submit = useCallback(() => {
@@ -31,5 +32,5 @@ export const useBrandProfileForm = (onComplete: () => void) => {
     onComplete();
   }, [canContinue, onComplete]);
 
-  return { brandProfile, setBrandProfile, onAction, canContinue, submit };
+  return { details, setDetails, onAction, canContinue, submit };
 };

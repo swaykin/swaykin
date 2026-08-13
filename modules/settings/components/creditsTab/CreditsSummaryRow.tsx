@@ -1,21 +1,17 @@
 import { Box } from "@/infra/baseweb/Box";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useWorkspaceContext } from "@/providers/WorkspaceProvider";
 import { useBillingPlan } from "../../hooks/useBillingPlan";
 import { StatCard } from "./StatCard";
 
 export const CreditsSummaryRow = () => {
-  const { workspace } = useWorkspace();
+  const { workspace } = useWorkspaceContext();
   const { plan } = useBillingPlan();
 
   return (
-    <Box className="grid grid-cols-3 gap-3">
+    <Box className="grid grid-cols-2 gap-3">
       <StatCard
         label="Available credits"
-        value={workspace.credits.toLocaleString()}
-      />
-      <StatCard
-        label="Used this month"
-        value={workspace.creditsUsedThisMonth.toLocaleString()}
+        value={workspace.creditBalance.toLocaleString()}
       />
       <StatCard
         label="Current plan"

@@ -14,7 +14,7 @@ export const BrandProfileModal = ({
   onClose,
   onComplete,
 }: BrandProfileModalProps) => {
-  const { brandProfile, onAction, canContinue, submit } =
+  const { details, onAction, canContinue, submit } =
     useBrandProfileForm(onComplete);
 
   return (
@@ -34,7 +34,7 @@ export const BrandProfileModal = ({
       <ModalBody className="px-1 flex flex-col gap-2">
         <BrandProfileFields
           subtitle="Tell us about your brand so SwayKin can draft outreach, score creators, and tailor recommendations."
-          brandProfile={brandProfile}
+          details={details}
           onAction={onAction}
         />
       </ModalBody>

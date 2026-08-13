@@ -5,7 +5,7 @@ import { FormInput } from "@/infra/components/FormInput";
 import { useProfileForm } from "../../hooks/useProfileForm";
 
 export const ProfileInfoCard = () => {
-  const { user, onAction, save } = useProfileForm();
+  const { user, onAction, save, isSaving } = useProfileForm();
 
   return (
     <Box className="rounded-2xl border border-border bg-surface p-5 shadow-card">
@@ -35,16 +35,24 @@ export const ProfileInfoCard = () => {
         />
         <FormInput
           className="flex-1"
-          id="phone"
+          id="phoneNumber"
           label="Phone"
-          value={user.phone}
+          value={user.phoneNumber ?? ""}
           onAction={onAction}
         />
       </Box>
 
-      <Button kind="primary" height="36px" onClick={save}>
-        Save changes
-      </Button>
+      <Box className="mt-5 flex justify-end gap-2 border-t border-border pt-5">
+        <Button
+          kind="primary"
+          height="36px"
+          width="80px"
+          onClick={save}
+          isLoading={isSaving}
+        >
+          Save
+        </Button>
+      </Box>
     </Box>
   );
 };

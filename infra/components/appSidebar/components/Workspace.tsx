@@ -1,6 +1,6 @@
 import { Box } from "@/infra/baseweb/Box";
 import { Avatar } from "@/infra/baseweb/Avatar";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useWorkspaceContext } from "@/providers/WorkspaceProvider";
 
 const AVATAR_OVERRIDES = {
   Root: {
@@ -14,7 +14,7 @@ const AVATAR_OVERRIDES = {
 };
 
 export const Workspace = () => {
-  const { workspace } = useWorkspace();
+  const { workspace } = useWorkspaceContext();
   return (
     <Box className="mx-3 mb-2.5 flex items-center gap-2.5 rounded-[10px] border border-border bg-sunken px-2.5 py-2">
       <Avatar
@@ -29,7 +29,7 @@ export const Workspace = () => {
           {workspace.name}
         </Box>
         <Box className="text-[10.5px] leading-tight text-text-tertiary">
-          {workspace.type}
+          {workspace.details?.industry}
         </Box>
       </Box>
     </Box>

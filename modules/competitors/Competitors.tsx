@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Box } from "@/infra/baseweb/Box";
 import { PageHeader } from "@/infra/components/PageHeader";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useWorkspaceContext } from "@/providers/WorkspaceProvider";
 import { AddCompetitorControl } from "./components/AddCompetitorControl";
 import { AlertsGrid } from "./components/AlertsGrid";
 import { CompareView } from "./components/compareView";
@@ -14,7 +14,7 @@ const Competitors = () => {
   const { tab, setTab, competitors, yourBrand, alerts } = useCompetitorState();
   const {
     workspace: { maxTrackedCompetitors },
-  } = useWorkspace();
+  } = useWorkspaceContext();
   const removal = useCompetitorRemoval(competitors);
 
   const activeCompetitors = useMemo(

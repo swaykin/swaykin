@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Box } from "@/infra/baseweb/Box";
 import { Icon } from "@/infra/baseweb/Icon";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useWorkspaceContext } from "@/providers/WorkspaceProvider";
 
 export const CreditsPill = () => {
-  const { workspace } = useWorkspace();
+  const { workspace } = useWorkspaceContext();
 
   return (
     <Link
@@ -19,7 +19,7 @@ export const CreditsPill = () => {
           color="var(--sk-accent-strong)"
         />
         <Box as="span" className="text-[12.5px] font-bold text-text">
-          {workspace.credits.toLocaleString("en-IN")}
+          {workspace.creditBalance.toLocaleString("en-IN")}
         </Box>
         credits
       </Box>
