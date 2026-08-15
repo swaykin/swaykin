@@ -11,9 +11,10 @@ out
 # os
 .DS_Store
 
-# env
-.env*
-
 # system
 .claude
 .vscode
+
+# skills
+.agents
+skills-lock.json
