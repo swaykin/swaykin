@@ -12,7 +12,8 @@ import "../globals.css";
 
 export const metadata: Metadata = {
   title: "SwayKin",
-  description: "AI-native influencer marketing platform for D2C brands.",
+  description:
+    "Where brands find creators, outsmart competitors, and turn campaigns into results — powered by AI, built for speed.",
 };
 
 const RootLayout = ({ children }: { children: ReactNode }) => {
