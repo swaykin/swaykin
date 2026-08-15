@@ -1,0 +1,1 @@
+export { CreditsTab } from "./CreditsTab";
