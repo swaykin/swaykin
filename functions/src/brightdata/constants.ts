@@ -1,0 +1,2 @@
+export const SNAPSHOT_POLL_TIMEOUT_MS = 10 * 60 * 1000;
+export const SNAPSHOT_POLL_INTERVAL_MS = 10 * 1000;
