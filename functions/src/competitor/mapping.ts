@@ -17,13 +17,14 @@ const ESTIMATED_VIEWS_MULTIPLIER = 15;
  */
 export function extractProfileData(
   posts: RawBrightDataPost[],
-  igHandle: string
+  igHandle: string,
+  profileType = "competitor"
 ): ProfileUpsertData {
   const sample = posts[0] as Record<string, unknown> | undefined;
 
   return {
     igHandle,
-    type: "competitor",
+    type: profileType,
     name: igHandle,
     avatarUrl: (sample?.profile_image_link as string) ?? null,
     followers: (sample?.followers as number) ?? null,
@@ -88,6 +89,7 @@ export function toPostUpsertData(
     likes,
     comments,
     hashtags: post.hashtags ?? [],
+    collaborators: post.coauthor_producers ?? [],
     videoPlayCount: videoViews,
     estimatedViews,
     engagementRatePercent: followers ?

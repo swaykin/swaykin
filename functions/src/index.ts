@@ -46,7 +46,10 @@ export {
 } from "./brightdata/refreshWorkspaceInstagramStats";
 export {competitorComparison} from "./brightdata/competitorComparison";
 export {addCompetitors} from "./competitor/addCompetitors";
+export {creator} from "./creator/creator";
 export {listCompetitors} from "./competitor/listCompetitors";
+export {competitorDeepdive} from "./competitor/competitorDeepdive";
+export {getPosts} from "./competitor/getPosts";
 export {processCompetitorTask} from "./competitor/processCompetitorTask";
 
 // Start writing functions

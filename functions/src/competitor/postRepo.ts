@@ -13,12 +13,35 @@ export interface PostUpsertData {
   likes?: number | null;
   comments?: number | null;
   hashtags?: string[];
+  collaborators?: string[];
   videoPlayCount?: number | null;
   estimatedViews?: number | null;
   engagementRatePercent?: number | null;
   estimatedReach?: number | null;
   postedAt: string;
   source: string;
+}
+
+export interface PostRow {
+  id: string;
+  postUrl: string;
+  postId: string;
+  shortcode: string;
+  caption: string | null;
+  type: string;
+  thumbnailUrl: string | null;
+  mediaUrls: string[];
+  likes: number | null;
+  comments: number | null;
+  hashtags: string[];
+  collaborators: string[];
+  videoPlayCount: number | null;
+  estimatedViews: number | null;
+  engagementRatePercent: number | null;
+  estimatedReach: number | null;
+  postedAt: string;
+  fetchedAt: string;
+  source: string | null;
 }
 
 const dc = getDataConnect(connectorConfig);
@@ -78,6 +101,52 @@ export async function upsertPost(data: PostUpsertData): Promise<void> {
     }`,
     {variables: {data: {...data, fetchedAt}}}
   );
+}
+
+/**
+ * @param {string} profileId Profile row id to fetch posts for.
+ * @param {number} limit Maximum number of posts to return (newest first).
+ * @param {number} offset Number of rows to skip (for pagination).
+ * @return {Promise<PostRow[]>} Posts for the given profile, newest first.
+ */
+export async function findPostsByProfileId(
+  profileId: string,
+  limit: number,
+  offset = 0
+): Promise<PostRow[]> {
+  const query = `query($profileId: UUID!, $limit: Int!, $offset: Int!) {
+    posts(
+      where: { profile: { id: { eq: $profileId } } }
+      orderBy: [{ postedAt: DESC }]
+      limit: $limit
+      offset: $offset
+    ) {
+      id
+      postUrl
+      postId
+      shortcode
+      caption
+      type
+      thumbnailUrl
+      mediaUrls
+      likes
+      comments
+      hashtags
+      collaborators
+      videoPlayCount
+      estimatedViews
+      engagementRatePercent
+      estimatedReach
+      postedAt
+      fetchedAt
+      source
+    }
+  }`;
+  const res = await dc.executeGraphqlRead<
+    { posts: PostRow[] },
+    { profileId: string; limit: number; offset: number }
+  >(query, {variables: {profileId, limit, offset}});
+  return res.data.posts;
 }
 
 /**
