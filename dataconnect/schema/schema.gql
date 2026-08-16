@@ -1,0 +1,219 @@
+type Workspace @table {
+  name: String!
+  brandName: String
+  industry: String
+  website: String
+  instagramHandle: String
+  brandDescription: String
+  brandVoice: String
+  targetAudience: String
+  logoUrl: String # Cloud Storage asset
+  planTier: String!
+  creditsBalance: Int!
+  creditsMonthlyAllowance: Int!
+  billingEmail: String
+  paymentMethodLast4: String
+  createdAt: Timestamp!
+  igFollowers: Int
+  igPostsCount: Int
+  igAvgEngagementRate: Float
+  igStatsUpdatedAt: Timestamp
+  # Pointer map: { [Profile.id]: { status, addedAt, notes } }. Keys reference
+  # the GLOBAL Profile table below, not a workspace-owned copy — two
+  # workspaces tracking the same competitor share one Profile/Post dataset.
+  # See SCHEMA_INSTRUCTIONS.md for the full data flow.
+  competitors: String
+}
+
+type User @table {
+  workspace: Workspace!
+  firebaseUid: String # Firebase Auth uid (e.g. `google:<sub>`); links a signed-in caller to this row.
+  fullName: String!
+  email: String!
+  phone: String
+  role: String!
+  bio: String
+  avatarUrl: String # Cloud Storage asset
+  timezone: String
+  language: String
+  authProvider: String
+  status: String!
+  createdAt: Timestamp!
+  lastLoginAt: Timestamp
+}
+
+type Influencer @table {
+  name: String!
+  handle: String!
+  igUrl: String
+  platform: String
+  niche: String
+  verified: Boolean
+  followers: Int
+  engagementRate: Float
+  avgViews: Int
+  postsPerWeek: Int
+  avatarUrl: String # Cloud Storage asset
+  country: String
+  priceRangeMin: Int
+  priceRangeMax: Int
+  bio: String
+  email: String
+  phone: String
+}
+
+type SavedInfluencer @table {
+  workspace: Workspace!
+  influencer: Influencer!
+  savedByUser: User!
+  status: String!
+  notes: String
+  tags: [String]
+  savedAt: Timestamp!
+}
+
+type SavedSearch @table {
+  workspace: Workspace!
+  name: String!
+  description: String
+  filters: String # JSON map
+  createdAt: Timestamp!
+}
+
+type Campaign @table {
+  workspace: Workspace!
+  name: String!
+  briefDescription: String
+  status: String!
+  startDate: Date
+  endDate: Date
+  budget: Float
+  spend: Float
+  reachTotal: Int
+  roi: Float
+  createdBy: User!
+  createdAt: Timestamp!
+}
+
+type CampaignCreator @table {
+  campaign: Campaign!
+  influencer: Influencer!
+  status: String!
+  paymentStatus: String
+  paymentAmount: Float
+  contractedAt: Timestamp
+}
+
+type Deliverable @table {
+  campaignCreator: CampaignCreator!
+  title: String!
+  type: String
+  dueDate: Timestamp
+  status: String!
+  completedAt: Timestamp
+  contentUrl: String # Cloud Storage asset
+}
+
+type OutreachThread @table {
+  workspace: Workspace!
+  influencer: Influencer
+  gmailThreadId: String
+  subject: String
+  folder: String
+  labels: [String]
+  lastMessageAt: Timestamp
+  hasUnreadReply: Boolean
+}
+
+type OutreachMessage @table {
+  thread: OutreachThread!
+  sender: String!
+  body: String!
+  sentAt: Timestamp!
+  isDraft: Boolean!
+}
+
+type Competitor @table {
+  workspace: Workspace!
+  name: String!
+  igHandle: String!
+  avatarUrl: String # Cloud Storage asset
+  followers: Int
+  postsPerMonth: Int
+  avgEngagementRate: Float
+  shareOfVoicePct: Float
+  monthlyChangePct: Float
+  addedAt: Timestamp!
+}
+
+type CompetitorContent @table {
+  competitor: Competitor!
+  postUrl: String
+  thumbnailUrl: String # Cloud Storage asset
+  postedAt: Timestamp!
+  likes: Int
+  comments: Int
+  type: String
+}
+
+####################################################################
+# Global, deduped tables (NOT scoped to a single workspace).
+# One Profile row per real Instagram account (unique by igHandle),
+# shared by every workspace that tracks it via Workspace.competitors.
+# See SCHEMA_INSTRUCTIONS.md.
+####################################################################
+
+type Profile @table {
+  igHandle: String!  # Unique across the whole table — dedup key
+  type: String!  # "influencer" | "brand" | "competitor"
+  name: String!
+  avatarUrl: String # Cloud Storage / CDN asset
+  bio: String
+  website: String
+  followers: Int
+  followings: Int
+  postsCount: Int
+  avgEngagementRate: Float
+  avgViews: Int
+  verified: Boolean
+  country: String
+  niche: String
+  priceRangeMin: Int
+  priceRangeMax: Int
+  email: String
+  phone: String
+  lastStatsUpdatedAt: Timestamp
+  createdAt: Timestamp!
+  brightDataSnapshotId: String
+}
+
+type Post @table {
+  profile: Profile!
+  postUrl: String!
+  postId: String! # Instagram post id — unique globally, always upsert on this
+  shortcode: String!
+  caption: String
+  type: String! # "Reel" | "Carousel" | "Image"
+  thumbnailUrl: String
+  mediaUrls: [String]
+  likes: Int
+  comments: Int
+  hashtags: [String]
+  videoPlayCount: Int # rarely populated by BrightData
+  estimatedViews: Int # fallback: likes x 15
+  engagementRatePercent: Float
+  estimatedReach: Int
+  collaborators: [String] # from BrightData coauthor_producers (official Instagram collab feature)
+  postedAt: Timestamp!
+  fetchedAt: Timestamp!
+  source: String # "brightdata" | "instagram_api" | "manual"
+}
+
+type CreditTransaction @table {
+  workspace: Workspace!
+  date: Timestamp!
+  activityDescription: String
+  activityType: String
+  creditsDelta: Int!
+  balanceAfter: Int!
+}
