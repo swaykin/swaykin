@@ -8,62 +8,14 @@ import {
 } from "../auth/authHelpers";
 import {getWorkspaceCompetitorMap} from "./workspaceCompetitors";
 import {findProfilesByIds} from "./profileRepo";
-import {findPostsByProfileId, PostRow} from "./postRepo";
+import {findPostsByProfileId} from "./postRepo";
+import {
+  computePostingFrequency,
+  computeTopHashtags,
+  computeCollaborators,
+} from "./metricsUtils";
 
 const RECENT_POSTS_LIMIT = 20;
-const TOP_HASHTAGS_LIMIT = 10;
-
-/**
- * @param {PostRow[]} posts Posts for one profile.
- * @return {number | null} Posts per week, or null if date range is too narrow.
- */
-function computePostingFrequency(posts: PostRow[]): number | null {
-  if (posts.length < 2) return null;
-  const timestamps = posts.map((p) => new Date(p.postedAt).getTime());
-  const newest = Math.max(...timestamps);
-  const oldest = Math.min(...timestamps);
-  const weeks = (newest - oldest) / (7 * 24 * 60 * 60 * 1000);
-  if (weeks === 0) return null;
-  return posts.length / weeks;
-}
-
-/**
- * @param {PostRow[]} posts Posts for one profile.
- * @return {{ tag: string; count: number }[]} Top hashtags by frequency.
- */
-function computeTopHashtags(
-  posts: PostRow[]
-): { tag: string; count: number }[] {
-  const freq = new Map<string, number>();
-  for (const post of posts) {
-    for (const tag of post.hashtags ?? []) {
-      freq.set(tag, (freq.get(tag) ?? 0) + 1);
-    }
-  }
-  return [...freq.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, TOP_HASHTAGS_LIMIT)
-    .map(([tag, count]) => ({tag, count}));
-}
-
-/**
- * @param {PostRow[]} posts Posts for one profile.
- * @return {{ handle: string; postCount: number }[]} Co-authors sorted by
- *   number of co-authored posts, descending.
- */
-function computeCollaborators(
-  posts: PostRow[]
-): { handle: string; postCount: number }[] {
-  const freq = new Map<string, number>();
-  for (const post of posts) {
-    for (const handle of post.collaborators ?? []) {
-      freq.set(handle, (freq.get(handle) ?? 0) + 1);
-    }
-  }
-  return [...freq.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([handle, postCount]) => ({handle, postCount}));
-}
 
 /**
  * Returns a deep-dive profile for each requested competitor — profile
