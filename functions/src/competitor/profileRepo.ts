@@ -6,9 +6,11 @@ export interface ProfileRow {
   igHandle: string;
   name: string;
   type: string;
+  bio: string | null;
+  avatarUrl: string | null;
   followers: number | null;
   postsCount: number | null;
-  avatarUrl: string | null;
+  avgEngagementRate: number | null;
   verified: boolean | null;
   lastStatsUpdatedAt: string | null;
 }
@@ -31,9 +33,11 @@ const PROFILE_FIELDS = `
   igHandle
   name
   type
+  bio
+  avatarUrl
   followers
   postsCount
-  avatarUrl
+  avgEngagementRate
   verified
   lastStatsUpdatedAt
 `;
@@ -144,7 +148,7 @@ export async function refreshProfileStats(
 }
 
 /** Staleness threshold before a shared Profile's stats are re-fetched. */
-export const PROFILE_STALE_MS = 24 * 60 * 60 * 1000;
+export const PROFILE_STALE_MS = 15 * 24 * 60 * 60 * 1000;
 
 /**
  * @param {ProfileRow} profile Existing global Profile row.

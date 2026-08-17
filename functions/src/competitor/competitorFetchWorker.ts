@@ -40,11 +40,13 @@ export async function fetchAndPersistCompetitor({
   igHandle,
   profileUrl,
   apiToken,
+  profileType = "competitor",
 }: {
   profileId: string;
   igHandle: string;
   profileUrl: string;
   apiToken: string;
+  profileType?: string;
 }): Promise<FetchResult> {
   const triggerResult = await triggerPostsDiscovery({
     profileUrl,
@@ -71,7 +73,7 @@ export async function fetchAndPersistCompetitor({
   }
 
   const selectedPosts = sortPostsByDateDesc(rawPosts);
-  const profileData = extractProfileData(rawPosts, igHandle);
+  const profileData = extractProfileData(rawPosts, igHandle, profileType);
 
   // Bright Data occasionally returns a malformed/non-array payload that
   // still passes the `rawPosts.length === 0` check above (e.g. a single

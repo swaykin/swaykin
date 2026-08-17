@@ -19,6 +19,7 @@ export interface RawBrightDataPost {
   videos?: string[];
   video_view_count?: number;
   video_play_count?: number;
+  coauthor_producers?: string[];
   [key: string]: unknown;
 }
 

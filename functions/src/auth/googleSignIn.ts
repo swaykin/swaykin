@@ -159,10 +159,14 @@ export const googleSignInStart = onRequest(
       serializeOAuthSessionCookie({nonce, frontendRedirectUri}, isSecure)
     );
 
+    // State encodes both the CSRF nonce and the return URL so the callback
+    // can recover frontendRedirectUri when a proxy (e.g. Firebase Hosting)
+    // strips the session cookie before forwarding to Cloud Run.
+    const encodedUri = Buffer.from(frontendRedirectUri).toString("base64url");
     const authUrl = buildGoogleAuthUrl({
       clientId: googleClientId.value(),
       redirectUri: googleRedirectUri.value(),
-      state: nonce,
+      state: `${nonce}.${encodedUri}`,
     });
 
     response.redirect(302, authUrl);
@@ -183,36 +187,62 @@ export const googleSignInCallback = onRequest(
     const session = readOAuthSessionCookie(request.headers.cookie);
     response.setHeader("Set-Cookie", clearOAuthSessionCookieHeader(isSecure));
 
-    if (!session) {
-      logger.warn("Google sign-in callback: missing or expired session cookie");
-      response.status(400).send("Missing or expired sign-in session. Retry.");
-      return;
-    }
-
     const {code, state, error} = request.query;
 
-    if (error) {
-      logger.warn("Google sign-in callback: Google returned an error", {error});
-      const errorParam = encodeURIComponent(String(error));
-      response.redirect(
-        302,
-        `${session.frontendRedirectUri}#error=${errorParam}`
-      );
-      return;
-    }
-
     if (typeof code !== "string" || typeof state !== "string") {
+      if (error) {
+        logger.warn("Google sign-in callback: Google returned an error before session resolved", {error});
+        response.status(400).send("Sign-in failed.");
+        return;
+      }
       logger.warn("Google sign-in callback: missing code or state param");
       response.status(400).send("Invalid sign-in request.");
       return;
     }
-    if (state !== session.nonce) {
-      logger.warn("Google sign-in callback: state/nonce mismatch");
-      response.status(400).send("Invalid sign-in request.");
+
+    // Resolve frontendRedirectUri: cookie is primary (CSRF-verified); state
+    // encoding is the fallback for when a proxy strips the cookie header.
+    let frontendRedirectUri: string;
+    if (session) {
+      if (!state.startsWith(session.nonce)) {
+        logger.warn("Google sign-in callback: state/nonce mismatch");
+        response.status(400).send("Invalid sign-in request.");
+        return;
+      }
+      frontendRedirectUri = session.frontendRedirectUri;
+    } else {
+      // Cookie was stripped — recover frontendRedirectUri from state payload.
+      const dotIdx = state.indexOf(".");
+      if (dotIdx === -1) {
+        logger.warn("Google sign-in callback: missing or expired session cookie");
+        response.status(400).send("Missing or expired sign-in session. Retry.");
+        return;
+      }
+      try {
+        frontendRedirectUri = Buffer.from(
+          state.slice(dotIdx + 1),
+          "base64url"
+        ).toString("utf8");
+      } catch {
+        logger.warn("Google sign-in callback: failed to decode state payload");
+        response.status(400).send("Invalid sign-in request.");
+        return;
+      }
+      if (!isAllowedFrontendRedirect(frontendRedirectUri)) {
+        logger.warn("Google sign-in callback: decoded redirect_uri not allowed", {frontendRedirectUri});
+        response.status(400).send("Invalid sign-in request.");
+        return;
+      }
+    }
+
+    if (error) {
+      logger.warn("Google sign-in callback: Google returned an error", {error});
+      const errorParam = encodeURIComponent(String(error));
+      response.redirect(302, `${frontendRedirectUri}#error=${errorParam}`);
       return;
     }
 
-    const intent = parseIntent(session.frontendRedirectUri);
+    const intent = parseIntent(frontendRedirectUri);
 
     try {
       const {accessToken} = await exchangeCodeForGoogleTokens({
@@ -247,20 +277,20 @@ export const googleSignInCallback = onRequest(
       logger.info("Google sign-in callback: minted token", {uid, intent});
       response.redirect(
         302,
-        `${session.frontendRedirectUri}#token=${tokenParam}`
+        `${frontendRedirectUri}#token=${tokenParam}`
       );
     } catch (err) {
       if (err instanceof IntentMismatchError) {
         response.redirect(
           302,
-          `${session.frontendRedirectUri}#error=${err.errorCode}`
+          `${frontendRedirectUri}#error=${err.errorCode}`
         );
         return;
       }
       logger.error("Google sign-in callback failed", err);
       response.redirect(
         302,
-        `${session.frontendRedirectUri}#error=sign_in_failed`
+        `${frontendRedirectUri}#error=sign_in_failed`
       );
     }
   }

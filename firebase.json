@@ -1,4 +1,38 @@
 {
+  "functions": {
+    "source": "functions"
+  },
+  "dataconnect": {
+    "source": "dataconnect"
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "headers": [
+      {
+        "source": "/v1/**",
+        "headers": [
+          { "key": "Access-Control-Allow-Origin", "value": "*" },
+          { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+          { "key": "Access-Control-Allow-Headers", "value": "Authorization, Content-Type" },
+          { "key": "Access-Control-Max-Age", "value": "3600" }
+        ]
+      }
+    ],
+    "rewrites": [
+      { "source": "/v1/googleSignInStart", "run": { "serviceId": "googlesigninstart", "region": "asia-south1" } },
+      { "source": "/v1/googleSignInCallback", "run": { "serviceId": "googlesignincallback", "region": "asia-south1" } },
+      { "source": "/v1/user", "run": { "serviceId": "user", "region": "asia-south1" } },
+      { "source": "/v1/workspace", "run": { "serviceId": "workspace", "region": "asia-south1" } },
+      { "source": "/v1/competitor", "run": { "serviceId": "competitor", "region": "asia-south1" } },
+      { "source": "/v1/competitorComparison", "run": { "serviceId": "competitorcomparison", "region": "asia-south1" } },
+      { "source": "/v1/refreshWorkspaceInstagramStats", "run": { "serviceId": "refreshworkspaceinstagramstats", "region": "asia-south1" } },
+      { "source": "/v1/discovery", "run": { "serviceId": "discovery", "region": "asia-south1" } },
+      { "source": "/v1/devMintToken", "run": { "serviceId": "devminttoken", "region": "asia-south1" } },
+      { "source": "/v1/listCompetitors", "run": { "serviceId": "listcompetitors", "region": "asia-south1" } },
+      { "source": "/v1/competitorDeepdive", "run": { "serviceId": "competitordeepdive", "region": "asia-south1" } }
+    ]
+  },
   "apphosting": {
     "backendId": "swaykin-app",
     "rootDir": "/",
