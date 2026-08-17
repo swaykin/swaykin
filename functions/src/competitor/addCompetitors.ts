@@ -1,8 +1,8 @@
 import {onRequest} from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
 import type {Request, Response} from "express";
-import {getFunctions} from "firebase-admin/functions";
 import {applyCors} from "../shared/cors";
+import {brightDataApiToken} from "../config";
 import {
   extractBearerToken,
   verifyFirebaseIdToken,
@@ -14,8 +14,11 @@ import {
   createProfile,
   isProfileStale,
 } from "./profileRepo";
-import {addCompetitorToWorkspace} from "./workspaceCompetitors";
-import {CompetitorTaskPayload} from "./processCompetitorTask";
+import {
+  addCompetitorToWorkspace,
+  setCompetitorFetchResult,
+} from "./workspaceCompetitors";
+import {fetchAndPersistCompetitor} from "./competitorFetchWorker";
 
 interface AddCompetitorsBody {
   accounts: string[];
@@ -26,7 +29,7 @@ interface AccountResult {
   igHandle?: string;
   profileId?: string;
   followers?: number | null;
-  status?: "active" | "pending";
+  status?: "active" | "error";
   error?: string;
 }
 
@@ -48,19 +51,18 @@ function parseBody(body: unknown): AddCompetitorsBody | null {
 }
 
 /**
- * Fast, synchronous half of adding a competitor. Never calls Bright Data
- * directly — Firebase Hosting's rewrite proxy caps requests at ~60s, well
- * under the 90-200s a real fetch takes, so that work is enqueued onto
- * {@link processCompetitorTask} instead and this returns immediately.
- * @param {string} rawInput Raw account string from the request.
+ * Adds one competitor account: reuses an existing global Profile if found,
+ * otherwise creates one and fetches posts from Bright Data synchronously.
+ * Stale profiles are refreshed in-place before returning.
+ * @param {string} rawInput Raw account string (handle or URL).
  * @param {string} workspaceId Calling workspace's id.
- * @return {Promise<AccountResult>} Immediate outcome for this one account —
- *   "active" if an already-fetched global Profile was reused, "pending" if
- *   a background fetch was just enqueued for a brand-new one.
+ * @param {string} apiToken Bright Data API bearer token.
+ * @return {Promise<AccountResult>} Outcome for this account.
  */
 async function processAccount(
   rawInput: string,
-  workspaceId: string
+  workspaceId: string,
+  apiToken: string
 ): Promise<AccountResult> {
   const normalized = normalizeInstagramAccount(rawInput);
   if (!normalized) {
@@ -69,27 +71,23 @@ async function processAccount(
   const {igHandle, profileUrl} = normalized;
 
   const existing = await findProfileByHandle(igHandle);
-
-  // A Profile with no followers AND no posts count has never actually been
-  // fetched — e.g. a placeholder left behind by an enqueue that failed
-  // (Cloud Tasks error, crash, etc.) before the worker could run. Its
-  // `lastStatsUpdatedAt` looks "fresh" (set at creation), so staleness
-  // alone can't distinguish it from a real fetch — check the data itself.
   const hasRealData =
     existing && (existing.followers !== null || existing.postsCount !== null);
 
   if (existing && hasRealData) {
-    // Serve existing data immediately regardless of staleness — a stale
-    // Profile still has real stats, just possibly outdated. Refresh it
-    // silently in the background rather than blocking the caller on it.
     await addCompetitorToWorkspace(workspaceId, existing.id, "active");
     if (isProfileStale(existing)) {
-      await enqueueFetch({
-        workspaceId,
-        profileId: existing.id,
-        igHandle,
-        profileUrl,
-      });
+      try {
+        await fetchAndPersistCompetitor({
+          profileId: existing.id,
+          igHandle,
+          profileUrl,
+          apiToken,
+        });
+      } catch (err) {
+        // Non-fatal — existing data still usable, log and continue
+        logger.warn(`addCompetitors: stale refresh failed for ${igHandle}`, err);
+      }
     }
     return {
       input: rawInput,
@@ -100,68 +98,49 @@ async function processAccount(
     };
   }
 
-  if (existing && !hasRealData) {
-    // Placeholder from a previous failed enqueue — retry it, keyed by the
-    // same Profile.id (no duplicate row).
-    await addCompetitorToWorkspace(workspaceId, existing.id, "pending");
-    await enqueueFetch({
-      workspaceId,
-      profileId: existing.id,
+  // New profile or placeholder from a previously failed fetch
+  const profileId = existing ?
+    existing.id :
+    await createProfile({igHandle, type: "competitor", name: igHandle});
+
+  await addCompetitorToWorkspace(workspaceId, profileId, "active");
+
+  try {
+    const result = await fetchAndPersistCompetitor({
+      profileId,
       igHandle,
       profileUrl,
+      apiToken,
     });
+    await setCompetitorFetchResult(workspaceId, profileId, "active");
     return {
       input: rawInput,
       igHandle,
-      profileId: existing.id,
-      followers: null,
-      status: "pending",
+      profileId,
+      followers: result.followers,
+      status: "active",
     };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    logger.error(`addCompetitors: fetch failed for ${igHandle}`, err);
+    await setCompetitorFetchResult(workspaceId, profileId, "error", message);
+    return {input: rawInput, igHandle, profileId, error: message};
   }
-
-  // Brand new — create a placeholder Profile now (fast) so the workspace's
-  // competitors map always points at a real row from the start, then hand
-  // the slow Bright Data fetch off to the background task.
-  const profileId = await createProfile({
-    igHandle,
-    type: "competitor",
-    name: igHandle,
-  });
-  await addCompetitorToWorkspace(workspaceId, profileId, "pending");
-  await enqueueFetch({workspaceId, profileId, igHandle, profileUrl});
-
-  return {
-    input: rawInput,
-    igHandle,
-    profileId,
-    followers: null,
-    status: "pending",
-  };
-}
-
-/**
- * @param {CompetitorTaskPayload} payload Task payload for the background
- *   worker.
- * @return {Promise<void>}
- */
-async function enqueueFetch(payload: CompetitorTaskPayload): Promise<void> {
-  const queue = getFunctions().taskQueue(
-    "locations/asia-south1/functions/processCompetitorTask"
-  );
-  await queue.enqueue(payload);
 }
 
 /**
  * Adds one or more Instagram accounts as competitors for the caller's
- * workspace. Returns immediately for every account: "active" if the
- * global Profile was already fetched (by this or any workspace) and is
- * reused as-is, or "pending" if a background fetch was just queued for a
- * brand-new account — poll `GET /v1/competitors` to see it flip to
- * "active" once that finishes.
+ * workspace. Fetches posts from Bright Data synchronously for new accounts
+ * and returns "active" once data is stored. Stale existing profiles are
+ * refreshed in-place before returning.
  * POST body: `{ accounts: string[] }` — bare handles or full profile URLs.
  */
 export const addCompetitors = onRequest(
-  {invoker: "public"},
+  {
+    invoker: "public",
+    secrets: [brightDataApiToken],
+    timeoutSeconds: 600,
+  },
   async (request: Request, response: Response) => {
     if (applyCors(request, response)) return;
 
@@ -203,10 +182,12 @@ export const addCompetitors = onRequest(
       return;
     }
 
+    const apiToken = brightDataApiToken.value();
     const results: AccountResult[] = [];
+
     for (const account of parsedBody.accounts) {
       try {
-        results.push(await processAccount(account, user.workspaceId));
+        results.push(await processAccount(account, user.workspaceId, apiToken));
       } catch (err) {
         logger.error(`addCompetitors: failed for "${account}"`, err);
         results.push({
@@ -216,6 +197,6 @@ export const addCompetitors = onRequest(
       }
     }
 
-    response.status(202).json({results});
+    response.status(200).json({results});
   }
 );
