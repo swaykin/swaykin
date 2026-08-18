@@ -11,10 +11,54 @@ import {
   findProfileByHandle,
   createProfile,
   isProfileStale,
+  ProfileRow,
 } from "../competitor/profileRepo";
-import {findPostsByProfileId} from "../competitor/postRepo";
+import {findPostsByProfileId, PostRow} from "../competitor/postRepo";
 import {fetchAndPersistCompetitor} from "../competitor/competitorFetchWorker";
 import {brightDataApiToken} from "../config";
+import {computeTopHashtags, computeCollaborators} from "../competitor/metricsUtils";
+
+const INSTAGRAM_BASE_URL = "https://www.instagram.com";
+
+function shapeProfile(profile: ProfileRow, posts: PostRow[]) {
+  return {
+    id: profile.id,
+    igUsername: profile.igHandle,
+    profileUrl: `${INSTAGRAM_BASE_URL}/${profile.igHandle}`,
+    name: profile.name,
+    type: "creator",
+    bio: profile.bio,
+    avatarUrl: profile.avatarUrl,
+    followers: profile.followers,
+    followings: profile.followings,
+    postsCount: profile.postsCount,
+    avgEngagementRate: profile.avgEngagementRate,
+    verified: profile.verified,
+    email: profile.email,
+    topHashtags: computeTopHashtags(posts, 5).map((h) => h.tag),
+    collaborators: computeCollaborators(posts),
+  };
+}
+
+function shapePosts(posts: PostRow[]) {
+  return posts.map((post) => ({
+    id: post.id,
+    postUrl: post.postUrl,
+    shortcode: post.shortcode,
+    caption: post.caption,
+    type: post.type,
+    thumbnailUrl: post.thumbnailUrl,
+    mediaUrls: post.mediaUrls,
+    likes: post.likes,
+    comments: post.comments,
+    hashtags: post.hashtags,
+    collaborators: post.collaborators,
+    videoPlayCount: post.videoPlayCount,
+    estimatedViews: post.estimatedViews,
+    engagementRatePercent: post.engagementRatePercent,
+    postedAt: post.postedAt,
+  }));
+}
 
 function parseBody(body: unknown): { igUsername: string } | null {
   if (typeof body !== "object" || body === null) return null;
@@ -75,7 +119,10 @@ export const creator = onRequest(
       if (profile && hasRealData && !isProfileStale(profile)) {
         const posts = await findPostsByProfileId(profile.id, 20);
         if (posts.length > 0) {
-          response.status(200).json({profile, posts});
+          response.status(200).json({
+            profile: shapeProfile(profile, posts),
+            posts: shapePosts(posts),
+          });
           return;
         }
       }
@@ -103,7 +150,10 @@ export const creator = onRequest(
       profile = await findProfileByHandle(igHandle);
       const posts = await findPostsByProfileId(profileId, 20);
 
-      response.status(200).json({profile, posts});
+      response.status(200).json({
+        profile: profile ? shapeProfile(profile, posts) : null,
+        posts: shapePosts(posts),
+      });
     } catch (err) {
       logger.error("creator: failed", {igHandle, err});
       response
