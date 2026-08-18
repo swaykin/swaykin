@@ -9,9 +9,11 @@ export interface ProfileRow {
   bio: string | null;
   avatarUrl: string | null;
   followers: number | null;
+  followings: number | null;
   postsCount: number | null;
   avgEngagementRate: number | null;
   verified: boolean | null;
+  email: string | null;
   lastStatsUpdatedAt: string | null;
 }
 
@@ -21,6 +23,7 @@ export interface ProfileUpsertData {
   name: string;
   avatarUrl?: string | null;
   followers?: number | null;
+  followings?: number | null;
   postsCount?: number | null;
   avgEngagementRate?: number | null;
   verified?: boolean | null;
@@ -36,9 +39,11 @@ const PROFILE_FIELDS = `
   bio
   avatarUrl
   followers
+  followings
   postsCount
   avgEngagementRate
   verified
+  email
   lastStatsUpdatedAt
 `;
 

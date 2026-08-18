@@ -28,6 +28,7 @@ export function extractProfileData(
     name: igHandle,
     avatarUrl: (sample?.profile_image_link as string) ?? null,
     followers: (sample?.followers as number) ?? null,
+    followings: (sample?.following as number) ?? (sample?.following_count as number) ?? null,
     postsCount: (sample?.posts_count as number) ?? null,
     verified: (sample?.is_verified as boolean) ?? null,
     avgEngagementRate: calculateAvgEngagementRate(
