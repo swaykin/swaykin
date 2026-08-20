@@ -3,7 +3,7 @@ import {PostRow} from "./postRepo";
 /**
  * Posts per week from the date range of fetched posts.
  * Returns null if fewer than 2 posts (no range to compute).
- * Result is rounded; minimum returned value is 1.
+ * Result is rounded to 1 decimal place.
  */
 export function computePostingFrequency(posts: PostRow[]): number | null {
   if (posts.length < 2) return null;
@@ -15,7 +15,7 @@ export function computePostingFrequency(posts: PostRow[]): number | null {
   const oldest = Math.min(...timestamps);
   const weeks = (newest - oldest) / (7 * 24 * 60 * 60 * 1000);
   if (weeks === 0) return null;
-  return Math.max(1, Math.round(posts.length / weeks));
+  return Math.round((posts.length / weeks) * 10) / 10;
 }
 
 /**
