@@ -33,6 +33,7 @@
       { "source": "/v1/competitors", "run": { "serviceId": "listcompetitors", "region": "asia-south1" } },
       { "source": "/v1/competitors/add", "run": { "serviceId": "addcompetitors", "region": "asia-south1" } },
       { "source": "/v1/competitorDeepdive", "run": { "serviceId": "competitordeepdive", "region": "asia-south1" } },
+      { "source": "/v1/competitors/deepdive", "run": { "serviceId": "competitordeepdive", "region": "asia-south1" } },
       { "source": "/v1/competitor/compare", "run": { "serviceId": "competitorcompare", "region": "asia-south1" } }
     ]
   },

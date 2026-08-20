@@ -18,11 +18,23 @@ import {
 const RECENT_POSTS_LIMIT = 20;
 
 /**
+ * @param {number | null} value Value to round, or null.
+ * @param {number} decimals Number of decimal places to round to.
+ * @return {number | null} The rounded value, or null if input was null.
+ */
+function roundTo(value: number | null, decimals: number): number | null {
+  if (value === null) return null;
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+}
+
+/**
  * Returns a deep-dive profile for each requested competitor — profile
  * metadata, posting metrics, top hashtags, collaborators, and recent posts.
  * All metrics are computed on-the-go from stored Post rows; no BrightData
  * call is made at read time.
  *
+ * Route: GET /v1/competitors/deepdive
  * Query param: `?profileIds=<uuid>,<uuid>,...` (comma-separated, max 20).
  * Only IDs already in the calling workspace's competitor map are processed.
  */
@@ -98,25 +110,22 @@ export const competitorDeepdive = onRequest(
 
           return {
             profileId: profile.id,
-            igHandle: profile.igHandle,
+            igUsername: profile.igHandle,
             name: profile.name,
             bio: profile.bio,
-            avatarUrl: profile.avatarUrl,
             followers: profile.followers,
             verified: profile.verified,
-            avgEngagementRate: profile.avgEngagementRate,
+            avgEngagementRate: roundTo(profile.avgEngagementRate, 2),
             postingFrequencyPerWeek: computePostingFrequency(posts),
-            topHashtags: computeTopHashtags(posts),
+            topHashtags: computeTopHashtags(posts).map((h) => h.tag),
             collaborators: computeCollaborators(posts),
             recentPosts: posts.map((post) => ({
               postUrl: post.postUrl,
               type: post.type,
-              thumbnailUrl: post.thumbnailUrl,
               likes: post.likes,
               comments: post.comments,
               estimatedViews: post.estimatedViews,
-              engagementRatePercent: post.engagementRatePercent,
-              estimatedReach: post.estimatedReach,
+              engagementRatePercent: roundTo(post.engagementRatePercent, 2),
               hashtags: post.hashtags,
               postedAt: post.postedAt,
             })),
