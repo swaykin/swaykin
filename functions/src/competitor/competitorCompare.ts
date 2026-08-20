@@ -116,10 +116,7 @@ export const competitorCompare = onRequest(
         profiles.map(async (profile) => {
           const posts = await findPostsByProfileId(profile.id, POSTS_LIMIT);
           return {
-            profileId: profile.id,
-            igHandle: profile.igHandle,
-            name: profile.name,
-            avatarUrl: profile.avatarUrl ?? null,
+            igUsername: profile.igHandle,
             followers: profile.followers ?? null,
             engagementRate: computeEngagementRate(
               posts,
@@ -130,17 +127,13 @@ export const competitorCompare = onRequest(
             activeCollaborations: computeActiveCollaborations(posts),
             avgReachPerPost: computeAvgReachPerPost(posts),
             contentBreakdown: computeContentBreakdown(posts),
-            followerGrowth30d: null,
-            followerGrowth90d: null,
-            workspaceStatus: competitorMap[profile.id]?.status ?? null,
-            addedAt: competitorMap[profile.id]?.addedAt ?? null,
           };
         })
       );
 
-      const ownBrand = {
+      const myBrand = {
         name: brand.brandName ?? null,
-        igHandle: brand.instagramHandle ?? null,
+        igUsername: brand.instagramHandle ?? null,
         followers: brand.igFollowers ?? null,
         engagementRate: brand.igAvgEngagementRate !== null && brand.igAvgEngagementRate !== undefined ?
           Math.round(brand.igAvgEngagementRate * 10) / 10 :
@@ -149,11 +142,9 @@ export const competitorCompare = onRequest(
         activeCollaborations: null,
         avgReachPerPost: null,
         contentBreakdown: null,
-        followerGrowth30d: null,
-        followerGrowth90d: null,
       };
 
-      response.status(200).json({ownBrand, competitors});
+      response.status(200).json({myBrand, competitors});
     } catch (err) {
       logger.error("competitorCompare: failed", err);
       const message = err instanceof Error ? err.message : "Unknown error";
