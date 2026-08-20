@@ -72,6 +72,8 @@ export async function fetchAndPersistCompetitor({
     throw new Error("No posts found for this account");
   }
 
+  console.log("BrightData raw sample:", JSON.stringify(rawPosts[0]));
+
   const selectedPosts = sortPostsByDateDesc(rawPosts);
   const profileData = extractProfileData(rawPosts, igHandle, profileType);
 
@@ -80,7 +82,7 @@ export async function fetchAndPersistCompetitor({
   // stray object). Guard against persisting garbage profile stats.
   if (profileData.followers === null && profileData.postsCount === null) {
     throw new Error(
-      "Bright Data returned no usable profile data for this account"
+      "Something went wrong, upstream service is currently not providing data"
     );
   }
 

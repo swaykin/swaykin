@@ -10,8 +10,8 @@ import {getWorkspaceCompetitorMap} from "./workspaceCompetitors";
 import {findProfilesByIds} from "./profileRepo";
 
 /**
- * Lists the calling workspace's tracked competitors, merging each pointer's
- * workspace-specific status/notes with the shared global Profile data.
+ * Lists the calling workspace's tracked competitors (name, verified,
+ * lastStatsUpdatedAt only).
  * Query param: `?status=active|inactive|archived` (default: active).
  */
 export const listCompetitors = onRequest(
@@ -60,11 +60,9 @@ export const listCompetitors = onRequest(
       const profiles = await findProfilesByIds(matchingIds);
 
       const results = profiles.map((profile) => ({
-        ...profile,
-        status: competitorMap[profile.id]?.status,
-        addedAt: competitorMap[profile.id]?.addedAt,
-        notes: competitorMap[profile.id]?.notes ?? null,
-        error: competitorMap[profile.id]?.error ?? null,
+        name: profile.name,
+        verified: profile.verified,
+        lastStatsUpdatedAt: profile.lastStatsUpdatedAt,
       }));
 
       response.status(200).json({competitors: results});

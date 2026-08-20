@@ -1,6 +1,7 @@
 {
   "functions": {
-    "source": "functions"
+    "source": "functions",
+    "predeploy": ["npm --prefix functions run build"]
   },
   "dataconnect": {
     "source": "dataconnect"
@@ -29,7 +30,8 @@
       { "source": "/v1/refreshWorkspaceInstagramStats", "run": { "serviceId": "refreshworkspaceinstagramstats", "region": "asia-south1" } },
       { "source": "/v1/discovery", "run": { "serviceId": "discovery", "region": "asia-south1" } },
       { "source": "/v1/devMintToken", "run": { "serviceId": "devminttoken", "region": "asia-south1" } },
-      { "source": "/v1/listCompetitors", "run": { "serviceId": "listcompetitors", "region": "asia-south1" } },
+      { "source": "/v1/competitors", "run": { "serviceId": "listcompetitors", "region": "asia-south1" } },
+      { "source": "/v1/competitors/add", "run": { "serviceId": "addcompetitors", "region": "asia-south1" } },
       { "source": "/v1/competitorDeepdive", "run": { "serviceId": "competitordeepdive", "region": "asia-south1" } },
       { "source": "/v1/competitor/compare", "run": { "serviceId": "competitorcompare", "region": "asia-south1" } }
     ]
