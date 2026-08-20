@@ -133,6 +133,7 @@ async function processAccount(
  * workspace. Fetches posts from Bright Data synchronously for new accounts
  * and returns "active" once data is stored. Stale existing profiles are
  * refreshed in-place before returning.
+ * Route: POST /v1/competitors/add
  * POST body: `{ accounts: string[] }` — bare handles or full profile URLs.
  */
 export const addCompetitors = onRequest(
