@@ -13,7 +13,7 @@ type TopBarProps = {
 };
 
 /** Sort/status/search filter state lives here as a standalone preview until this wires up
- * to real saved-influencer data. List catalog itself is lifted to useCreatorLists since
+ * to real saved-creator data. List catalog itself is lifted to useCreatorLists since
  * cards also need it for list-membership toggling. */
 export const TopBar = ({ lists, onCreateList, onDeleteList }: TopBarProps) => {
   const [search, setSearch] = useState("");

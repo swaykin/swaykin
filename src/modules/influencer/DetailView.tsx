@@ -4,7 +4,7 @@ import { ContentTypeBreakdown } from "@/infra/components/ContentTypeBreakdown";
 import { RecentPostsCard } from "@/infra/components/RecentPostsCard";
 import { TopHashtagsCard } from "@/infra/components/TopHashtagsCard";
 import { useSavedInfluencers } from "@/hooks/useSavedInfluencers";
-import { getEntityTintByName } from "@/lib/entityColor";
+import { getEntityColor } from "@/lib/entityColor";
 import { CollaborationsCard } from "./components/CollaborationsCard";
 import { ContentThemesCard } from "./components/ContentThemesCard";
 import { HeaderCard } from "./components/HeaderCard";
@@ -20,7 +20,7 @@ type DetailViewProps = {
 export const DetailView = ({ influencer, onBack }: DetailViewProps) => {
   const { savedIds, toggleSaved } = useSavedInfluencers();
   const saved = !!savedIds[influencer.id];
-  const tint = getEntityTintByName(influencer.name);
+  const { color, tint } = getEntityColor(influencer.name);
 
   return (
     <Box className="flex flex-col gap-5">
@@ -31,7 +31,7 @@ export const DetailView = ({ influencer, onBack }: DetailViewProps) => {
         onExport={_noop}
         onOutreach={_noop}
       />
-      <HeaderCard influencer={influencer} />
+      <HeaderCard influencer={influencer} avatarColor={color} />
       <Box className="flex flex-wrap items-start gap-5">
         <Box className="min-w-[380px] flex-[2_1_420px]">
           <CollaborationsCard collabs={influencer.collabs} />
