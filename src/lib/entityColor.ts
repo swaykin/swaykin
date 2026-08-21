@@ -3,84 +3,61 @@ export type EntityColor = {
   tint: string;
 };
 
-/**
- * 15 genuinely distinct hues, then 6 more reusing a subset of those hues at a `-900` (deep)
- * shade — far enough from their `-500` counterpart to read as a different identity, rather
- * than adjacent shades like 500/600 which look too similar side by side. Deliberately skips
- * red (reserved for errors/destructive actions elsewhere in the app) so an entity's identity
- * color never gets misread as that meaning.
- *
- * The first 4 entries (pink, teal, orange, violet) intentionally match the original design's
- * brand colors for its first 4 competitors (Mamaearth, Plum Goodness, Minimalist, WOW Skin
- * Science, in that order) — everything after that is ours to fill in.
- */
-// Ordered so that ADJACENT entries sit far apart on the hue wheel (not sorted by hue angle) —
-// sequential/nearby palette indices are what actually end up next to each other in the UI
-// (adjacent competitors, adjacent avatars), so it's adjacency in this array that needs to be
-// visually distinct, not just distinctness of the set as a whole.
-const PALETTE: EntityColor[] = [
-  { color: "var(--pink-500)", tint: "var(--pink-50)" },
-  { color: "var(--teal-500)", tint: "var(--teal-50)" },
-  { color: "var(--yellow-500)", tint: "var(--orange-50)" },
-  { color: "var(--violet-500)", tint: "var(--violet-50)" },
-  { color: "var(--amber-500)", tint: "var(--amber-50)" },
-  { color: "var(--sky-500)", tint: "var(--sky-50)" },
-  { color: "var(--orange-500)", tint: "var(--yellow-50)" },
-  { color: "var(--blue-500)", tint: "var(--blue-50)" },
-  { color: "var(--lime-500)", tint: "var(--lime-50)" },
-  { color: "var(--indigo-500)", tint: "var(--indigo-50)" },
-  { color: "var(--green-500)", tint: "var(--green-50)" },
-  { color: "var(--purple-500)", tint: "var(--purple-50)" },
-  { color: "var(--emerald-500)", tint: "var(--emerald-50)" },
-  { color: "var(--fuchsia-500)", tint: "var(--fuchsia-50)" },
-  { color: "var(--cyan-500)", tint: "var(--cyan-50)" },
-  // Deep-shade extensions (16-21) — same spread-out-adjacency logic
-  { color: "var(--orange-900)", tint: "var(--orange-50)" },
-  { color: "var(--blue-900)", tint: "var(--blue-50)" },
-  { color: "var(--green-900)", tint: "var(--green-50)" },
-  { color: "var(--violet-900)", tint: "var(--violet-50)" },
-  { color: "var(--cyan-900)", tint: "var(--cyan-50)" },
-  { color: "var(--pink-900)", tint: "var(--pink-50)" },
-];
-
-/**
- * Deterministic identity color for a backend-sourced entity, by its stable position in the
- * canonical list (not a hash of its id) — guarantees zero repetition up to PALETTE.length,
- * and repeats predictably (cycling) beyond that, which is fine for larger, order-agnostic
- * sets like creator avatars.
- */
-export const getEntityColor = (index: number): EntityColor =>
-  PALETTE[index % PALETTE.length];
-
 // Content-type colors — semantic (same 3 for every brand, not an identity color from PALETTE
-// above), so fixed rather than assigned. Lighter (-400) shades so they read as a softer,
-// different *role* than the bold -500 identity dots, even where a hue is shared with a
-// competitor's own color. Skips teal specifically since that's `--sk-accent`.
+// below), so fixed rather than assigned. Lighter (-400) shades so they read as a softer,
+// different *role* than the bold identity dots, even where a hue is shared with an entity's
+// own color. Skips teal specifically since that's `--sk-accent`.
 export const REEL = "#E1306C";
 export const STATIC = "#0074D9";
 export const CAROUSEL = "#FF851B";
 
-const AVATAR_HUE_ORDER = [
+// All 16 hues this app's design tokens define, minus `red` (reserved for errors/destructive
+// actions elsewhere in the app) so an entity's identity color never gets misread as that
+// meaning — 15 usable hues. Ordered so ADJACENT entries sit far apart on the hue wheel —
+// sequential palette indices are what actually end up next to each other in the UI (adjacent
+// competitors, adjacent avatars), so it's adjacency in this array that needs to be distinct.
+const HUE_ORDER = [
+  "pink",
+  "teal",
   "orange",
-  "sky",
-  "lime",
   "violet",
   "amber",
+  "sky",
   "blue",
-  "emerald",
-  "fuchsia",
-  "yellow",
+  "lime",
   "indigo",
   "green",
   "purple",
+  "emerald",
+  "fuchsia",
   "cyan",
-  "pink",
-  "teal",
-  "red",
+  "yellow",
 ];
-const AVATAR_SHADES = [500, 400, 600, 700];
-const AVATAR_PALETTE: string[] = AVATAR_SHADES.flatMap((shade) =>
-  AVATAR_HUE_ORDER.map((hue) => `var(--${hue}-${shade})`),
+
+// Multiple shades per hue for more variety across large sets (e.g. a 50-row Discovery grid)
+// without needing more hues — adjacent shades of the same hue (500/600) still read as related,
+// so shades are the outer loop: cycling through every hue once per shade before repeating a
+// hue, rather than exhausting one hue's shades before moving on.
+const SHADES = [500, 700, 600, 400];
+
+const TINT_MIX_PERCENT = 10;
+
+/**
+ * Every {color, tint} pair this app needs for entity identity, built from one hue×shade grid
+ * instead of separately-curated color and tint palettes. Tint is derived from color via
+ * `color-mix()` rather than a fixed `-50` token — those tokens have no dark-mode override (they
+ * stay light-pastel even in dark mode), whereas a color-mix'd tint is automatically theme-safe
+ * since it blends with whatever's actually behind it. Same pattern this app's own
+ * `--sk-accent-subtle` already uses in dark mode (`rgba(accent, 0.16)`).
+ */
+const PALETTE: EntityColor[] = SHADES.flatMap((shade) =>
+  HUE_ORDER.map((hue) => {
+    const color = `var(--${hue}-${shade})`;
+    return {
+      color,
+      tint: `color-mix(in srgb, ${color} ${TINT_MIX_PERCENT}%, transparent)`,
+    };
+  }),
 );
 
 const hashString = (value: string): number => {
@@ -92,33 +69,11 @@ const hashString = (value: string): number => {
 };
 
 /**
- * Avatar background color, picked by hashing a name/label instead of a list position — there's
- * no stable index to key off (just whatever string is being initialed), and a repeat between
- * two unrelated people is fine at this count (56 colors).
+ * Deterministic {color, tint} identity for an entity, by hashing its name/handle — there's no
+ * stable list position to key off (backend order isn't stable across requests), and a repeat
+ * among unrelated entities is fine at this palette size. The single seam for entity identity
+ * color anywhere in the app: an avatar fill, a competitor chip's border+background, a post-tile
+ * background — all pull from the same coordinated pair, so a color always matches its own tint.
  */
-export const getEntityColorByName = (name: string): string =>
-  AVATAR_PALETTE[hashString(name) % AVATAR_PALETTE.length];
-
-// Skips red, same reasoning as PALETTE above (reserved for errors/destructive actions).
-const TINT_HUE_ORDER = [
-  "pink",
-  "teal",
-  "orange",
-  "violet",
-  "amber",
-  "sky",
-  "blue",
-  "lime",
-  "indigo",
-  "green",
-  "purple",
-  "emerald",
-  "fuchsia",
-  "cyan",
-];
-const TINT_PALETTE: string[] = TINT_HUE_ORDER.map((hue) => `var(--${hue}-50)`);
-
-/** Post-tile background tint for a profile (competitor or influencer), by hashed name — same
- * derived-not-stored approach as `getEntityColorByName`, just a lighter, single shared tone. */
-export const getEntityTintByName = (name: string): string =>
-  TINT_PALETTE[hashString(name) % TINT_PALETTE.length];
+export const getEntityColor = (name: string): EntityColor =>
+  PALETTE[hashString(name) % PALETTE.length];

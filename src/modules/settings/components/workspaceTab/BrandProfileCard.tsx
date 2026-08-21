@@ -32,11 +32,10 @@ export const BrandProfileCard = () => {
         <Button
           kind="primary"
           height="36px"
-          width="80px"
           onClick={save}
           isLoading={isSaving}
         >
-          Save
+          Save Changes
         </Button>
       </Box>
     </Box>

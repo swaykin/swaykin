@@ -3,11 +3,16 @@ import { api } from "@/lib/api";
 import { useFirebaseUser } from "@/hooks/useFirebaseUser";
 
 type UseQueryOptions<T> = {
+  /** Calls Cloud Functions directly, bypassing the v1 proxy. */
+  direct?: boolean;
   onCompleted?: (data: T) => void;
   onError?: (error: Error) => void;
 };
 
-export const useQuery = <T>(path: string, { onCompleted, onError }: UseQueryOptions<T> = {}) => {
+export const useQuery = <T>(
+  path: string,
+  { direct, onCompleted, onError }: UseQueryOptions<T> = {},
+) => {
   const { user: firebaseUser } = useFirebaseUser();
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,7 +27,7 @@ export const useQuery = <T>(path: string, { onCompleted, onError }: UseQueryOpti
     setLoading(true);
     setError(null);
     api
-      .get<T>(path)
+      .get<T>(path, direct)
       .then((result) => {
         setData(result);
         onCompleted?.(result);
@@ -34,7 +39,7 @@ export const useQuery = <T>(path: string, { onCompleted, onError }: UseQueryOpti
         onError?.(normalizedError);
       })
       .finally(() => setLoading(false));
-  }, [firebaseUser, path, onCompleted, onError]);
+  }, [firebaseUser, path, direct, onCompleted, onError]);
 
   useEffect(() => {
     refetch();

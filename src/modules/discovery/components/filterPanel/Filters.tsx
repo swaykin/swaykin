@@ -58,20 +58,8 @@ export const Filters = ({
         onMaxChange: (value) =>
           onAction({ followers: [filterState.followers[0], value] }),
       },
-      {
-        key: "er",
-        label: "Engagement %",
-        icon: "ph-heart",
-        valueType: "decimal",
-        minVal: filterState.engagementRate[0],
-        maxVal: filterState.engagementRate[1],
-        onMinChange: (value) =>
-          onAction({ engagementRate: [value, filterState.engagementRate[1]] }),
-        onMaxChange: (value) =>
-          onAction({ engagementRate: [filterState.engagementRate[0], value] }),
-      },
     ],
-    [filterState.followers, filterState.engagementRate, onAction],
+    [filterState.followers, onAction],
   );
 
   const toggles = useMemo(
@@ -107,8 +95,9 @@ export const Filters = ({
     <Box>
       <AISearchBar />
       <Box className="flex flex-col gap-3 mb-3.5 rounded-2xl border border-border bg-surface px-[18px] py-4 shadow-card">
-        <NumericRangeFilters filters={numericFilters} />
-        <Box className="flex flex-wrap gap-2.5">
+        <Box className="flex flex-wrap items-center gap-2.5">
+          <NumericRangeFilters filters={numericFilters} />
+          <Box className="h-6 w-px bg-border" />
           <FilterCapsule
             icon="ph-tag"
             label="Category"

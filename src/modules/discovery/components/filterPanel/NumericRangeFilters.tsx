@@ -38,7 +38,7 @@ const RANGE_INPUT_PROPS = {
 };
 
 const NumericRangeField = ({ filter }: { filter: NumericRangeFilter }) => (
-  <Box className="flex h-9 min-w-[260px] flex-1 items-center gap-[7px] rounded-lg border border-border bg-surface px-3">
+  <Box className="flex h-9 min-w-[260px] items-center gap-[7px] rounded-lg border border-border bg-surface px-3">
     <Icon
       name={filter.icon}
       weight="bold"
