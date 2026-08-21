@@ -55,7 +55,7 @@ export const SearchInput = ({
     value={value}
     onChange={(e) => onChange(e.target.value)}
     onFocus={onFocus}
-    placeholder="Search campaigns, influencers, competitors…"
+    placeholder="Search campaigns, creators, competitors…"
     height="36px"
     borderColor="var(--sk-border)"
     fontSize="12.5px"

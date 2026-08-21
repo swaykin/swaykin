@@ -1,11 +1,8 @@
 import type { CompareMetric } from "./types";
 
-export const DEFAULT_SELECTED_COMPETITORS: Record<string, boolean> = {
-  mamaearth: true,
-  plum: true,
-  minimalist: true,
-  wow: false,
-};
+/** Empty — real tracked-competitor keys aren't known ahead of time. useCompareSelection
+ * defaults to "all selected" until the user explicitly customizes it. */
+export const DEFAULT_SELECTED_COMPETITORS: Record<string, boolean> = {};
 
 export const COMPARE_METRICS: CompareMetric[] = [
   {

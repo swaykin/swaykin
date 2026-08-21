@@ -1,8 +1,13 @@
+import { useMemo } from "react";
 import { Box } from "@/infra/baseweb/Box";
+import { Icon } from "@/infra/baseweb/Icon";
 import { ContentTypeBreakdown } from "@/infra/components/ContentTypeBreakdown";
 import { RecentPostsCard } from "@/infra/components/RecentPostsCard";
 import { TopHashtagsCard } from "@/infra/components/TopHashtagsCard";
-import type { ColoredBrandMetrics, ColoredCompetitor } from "../../types";
+import { getEntityColor } from "@/lib/entityColor";
+import { useCompetitorsDeepdive } from "../../hooks/useCompetitorDeepdive";
+import { mapDeepdiveToColoredCompetitor } from "../../mapCompetitor";
+import type { ColoredBrandMetrics } from "../../types";
 import { BioSummaryCard } from "./BioSummaryCard";
 import { CollaborationsList } from "./CollaborationsList";
 import { CompetitorPillSelector } from "./CompetitorPillSelector";
@@ -10,23 +15,49 @@ import { OverviewCards } from "./OverviewCards";
 import { useDeepDiveSelection } from "./useDeepDiveSelection";
 
 type DeepDiveViewProps = {
-  activeCompetitors: ColoredCompetitor[];
-  allCompetitors: ColoredCompetitor[];
   yourBrand: ColoredBrandMetrics;
 };
 
-export const DeepDiveView = ({
-  activeCompetitors,
-  allCompetitors,
-  yourBrand,
-}: DeepDiveViewProps) => {
-  const { deepDiveKey, setDeepDiveKey, activeCompetitor } =
-    useDeepDiveSelection(activeCompetitors, allCompetitors);
+export const DeepDiveView = ({ yourBrand }: DeepDiveViewProps) => {
+  const { competitors: rawCompetitors, loading } = useCompetitorsDeepdive();
+
+  const competitors = useMemo(
+    () =>
+      // Hashes igUsername (not name) so a competitor's identity color/tint matches CompareView,
+      // which keys the same way — consistent across both tabs.
+      rawCompetitors.map((c) => {
+        const { color, tint } = getEntityColor(c.igUsername);
+        return mapDeepdiveToColoredCompetitor(c, color, tint);
+      }),
+    [rawCompetitors],
+  );
+
+  const { deepDiveKey, setDeepDiveKey, activeCompetitor } = useDeepDiveSelection(
+    competitors,
+    competitors,
+  );
+
+  if (loading && competitors.length === 0) {
+    return (
+      <Box className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-16 text-sm text-text-secondary">
+        <Icon name="ph-circle-notch" size={16} className="animate-spin" />
+        Loading competitors…
+      </Box>
+    );
+  }
+
+  if (competitors.length === 0) {
+    return (
+      <Box className="flex items-center justify-center rounded-2xl border border-border bg-surface py-16 text-sm text-text-secondary">
+        No tracked competitors yet — add one above to see its deep dive.
+      </Box>
+    );
+  }
 
   return (
     <Box className="flex flex-col gap-5">
       <CompetitorPillSelector
-        competitors={activeCompetitors}
+        competitors={competitors}
         activeKey={deepDiveKey}
         onSelect={setDeepDiveKey}
       />

@@ -11,9 +11,20 @@ export const useCompareSelection = (
   maxTracked: number,
 ) => {
   const { onError } = useSnackbar();
-  const [selected, setSelected] = useLocalStorageState<Record<string, boolean>>(
+  const [storedSelected, setStoredSelected] = useLocalStorageState<Record<string, boolean>>(
     "competitors:compareSelected",
     DEFAULT_SELECTED_COMPETITORS,
+  );
+
+  // Real tracked-competitor keys aren't known ahead of time, so nothing being stored yet means
+  // "not customized" rather than "none selected" — every tracked competitor shows by default.
+  const hasCustomSelection = Object.keys(storedSelected).length > 0;
+  const selected: Record<string, boolean> = useMemo(
+    () =>
+      hasCustomSelection
+        ? storedSelected
+        : Object.fromEntries(activeCompetitors.map((c) => [c.key, true])),
+    [hasCustomSelection, storedSelected, activeCompetitors],
   );
 
   const toggleSelected = useCallback(
@@ -25,9 +36,9 @@ export const useCompareSelection = (
         );
         return;
       }
-      setSelected((s) => ({ ...s, [key]: !s[key] }));
+      setStoredSelected(() => ({ ...selected, [key]: !selected[key] }));
     },
-    [selected, maxTracked, onError, setSelected],
+    [selected, maxTracked, onError, setStoredSelected],
   );
 
   // Kept as its own useMemo (rather than folded into compareCols) so a selection change doesn't
