@@ -17,9 +17,6 @@ export const ContentThemesCard = ({ themes }: ContentThemesCardProps) => (
       <Box as="span" className="text-[14.5px] font-bold text-text">
         Content themes
       </Box>
-      <Box as="span" className="text-xs text-text-tertiary">
-        inferred from captions &amp; hashtags
-      </Box>
     </Box>
     <Box className="flex flex-wrap gap-2">
       {themes.map((theme) => (

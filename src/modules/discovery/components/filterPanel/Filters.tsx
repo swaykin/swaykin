@@ -76,12 +76,12 @@ export const Filters = ({
         checked: filterState.isVerified,
         onToggle: () => onAction({ isVerified: !filterState.isVerified }),
       },
-      {
-        key: "bookmarked",
-        label: "Bookmarked",
-        checked: filterState.bookmarked,
-        onToggle: () => onAction({ bookmarked: !filterState.bookmarked }),
-      },
+      // {
+      //   key: "bookmarked",
+      //   label: "Bookmarked",
+      //   checked: filterState.bookmarked,
+      //   onToggle: () => onAction({ bookmarked: !filterState.bookmarked }),
+      // },
     ],
     [
       filterState.hasEmail,
@@ -93,7 +93,7 @@ export const Filters = ({
 
   return (
     <Box>
-      <AISearchBar />
+      {/* <AISearchBar /> */}
       <Box className="flex flex-col gap-3 mb-3.5 rounded-2xl border border-border bg-surface px-[18px] py-4 shadow-card">
         <Box className="flex flex-wrap items-center gap-2.5">
           <NumericRangeFilters filters={numericFilters} />

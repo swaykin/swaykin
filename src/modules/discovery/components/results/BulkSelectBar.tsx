@@ -34,7 +34,7 @@ export const BulkSelectBar = ({
     >
       Compare
     </Button>
-    <Button
+    {/* <Button
       kind="primary"
       type="button"
       height="36px"
@@ -54,7 +54,7 @@ export const BulkSelectBar = ({
       onClick={onAddToCampaign}
     >
       Add to campaign
-    </Button>
+    </Button> */}
     <Button
       kind="tertiary"
       type="button"

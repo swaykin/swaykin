@@ -41,7 +41,7 @@ export const TopActionBar = ({
     >
       Back
     </Button>
-    <Box className="h-5 w-px flex-shrink-0 bg-border" />
+    {/* <Box className="h-5 w-px flex-shrink-0 bg-border" />
     <Button
       kind="primary"
       onClick={onToggleShortlist}
@@ -78,6 +78,6 @@ export const TopActionBar = ({
       }
     >
       Start Outreach
-    </Button>
+    </Button> */}
   </Box>
 );

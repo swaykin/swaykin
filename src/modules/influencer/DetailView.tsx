@@ -40,7 +40,7 @@ export const DetailView = ({ influencer, onBack }: DetailViewProps) => {
           <TopHashtagsCard hashtags={influencer.hashtags} />
         </Box>
       </Box>
-      <ContentThemesCard themes={influencer.themes} />
+      {/* <ContentThemesCard themes={influencer.themes} /> */}
       <RecentPostsCard
         posts={influencer.posts}
         totalPosts={influencer.totalPostsNum}

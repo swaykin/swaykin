@@ -12,7 +12,7 @@ type AddCompetitorControlProps = {
 
 export const AddCompetitorControl = ({
   trackedCount,
-  maxTracked,
+  maxTracked = 10,
   onAdded,
 }: AddCompetitorControlProps) => {
   const {
@@ -51,7 +51,11 @@ export const AddCompetitorControl = ({
               onClick={submitAddCompetitor}
               startEnhancer={
                 submitting ? (
-                  <Icon name="ph-circle-notch" size={11} className="animate-spin" />
+                  <Icon
+                    name="ph-circle-notch"
+                    size={11}
+                    className="animate-spin"
+                  />
                 ) : undefined
               }
             >

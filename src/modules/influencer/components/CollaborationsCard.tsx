@@ -104,9 +104,6 @@ export const CollaborationsCard = ({ collabs }: CollaborationsCardProps) => {
         <Box as="span" className="text-[14.5px] font-bold text-text">
           Brand collaborations
         </Box>
-        <Box as="span" className="text-xs font-medium text-text-tertiary">
-          detected from public posts
-        </Box>
       </Box>
       {hasCollabs && (
         <Box className="mb-4 flex gap-6 rounded-xl bg-sunken px-4 py-3">

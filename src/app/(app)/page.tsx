@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
+
 const DashboardPage = () => {
-  return null;
+  redirect("/discovery");
 };
 
 export default DashboardPage;

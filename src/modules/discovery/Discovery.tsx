@@ -95,14 +95,14 @@ const Discovery = () => {
           onRestore={onRestore}
           onClearAll={onClearAll}
         />
-        <Box className="mb-3.5 flex flex-wrap items-center gap-2">
+        {/* <Box className="mb-3.5 flex flex-wrap items-center gap-2">
           <SavedSearches
             appliedFilters={appliedFilters}
             onApplyFilters={onApplySnapshot}
           />
           <Box className="flex-1" />
           <ViewToggle view={view} onChange={setView} />
-        </Box>
+        </Box> */}
         {selectedCount > 0 && (
           <BulkSelectBar
             selectedCount={selectedCount}

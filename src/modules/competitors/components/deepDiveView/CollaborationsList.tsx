@@ -59,9 +59,6 @@ export const CollaborationsList = ({ collabs }: CollaborationsListProps) => {
         <Box as="span" className="text-[14.5px] font-bold text-text">
           Creator collaborations
         </Box>
-        <Box as="span" className="text-xs font-medium text-text-tertiary">
-          detected from public posts
-        </Box>
       </Box>
       <Box
         className="max-h-[260px] overflow-y-auto px-5 pb-5"

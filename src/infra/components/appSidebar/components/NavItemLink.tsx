@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Box } from "@/infra/baseweb/Box";
 import { Icon } from "@/infra/baseweb/Icon";
+import { Tag } from "@/infra/components/Tag";
 import type { NavItem } from "../navItems";
 
 export const NavItemLink = ({
@@ -10,6 +11,18 @@ export const NavItemLink = ({
   item: NavItem;
   active: boolean;
 }) => {
+  if (item.comingSoon) {
+    return (
+      <Box className="mb-0.5 flex cursor-default items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] font-semibold text-text-tertiary">
+        <Icon name={item.icon} weight="bold" size={16.5} color="var(--sk-text-tertiary)" />
+        <Box as="span" className="flex-1 truncate">
+          {item.label}
+        </Box>
+        <Tag label="Coming soon" size="sm" />
+      </Box>
+    );
+  }
+
   return (
     <Link
       href={item.href}

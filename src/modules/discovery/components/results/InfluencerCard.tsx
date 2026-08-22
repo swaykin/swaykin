@@ -67,7 +67,7 @@ const InfluencerCardHeader = ({
         </Box>
       </Box>
     </Box>
-    <IconButton
+    {/* <IconButton
       kind="tertiary"
       type="button"
       aria-label={saved ? "Remove from shortlist" : "Add to shortlist"}
@@ -82,7 +82,7 @@ const InfluencerCardHeader = ({
         size={17}
         color={saved ? "var(--sk-accent-strong)" : "var(--sk-text-tertiary)"}
       />
-    </IconButton>
+    </IconButton> */}
   </Box>
 );
 

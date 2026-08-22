@@ -271,7 +271,7 @@ export const RecentPostsCard = ({
             />
           ))}
         </Box>
-        {hasMore && (
+        {/* {hasMore && (
           <Box className="mt-4 flex justify-center">
             <Button
               kind="secondary"
@@ -282,7 +282,7 @@ export const RecentPostsCard = ({
               Load more
             </Button>
           </Box>
-        )}
+        )} */}
       </Box>
       <PostDetailModal
         post={openIndex !== null ? posts[openIndex] : null}
