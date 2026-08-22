@@ -9,7 +9,7 @@ const BASE_URL = "https://api.brightdata.com/datasets";
 
 export interface DatasetFilterCondition {
   name: string;
-  value: string | number | boolean;
+  value: string | number | boolean | string[];
   operator: string;
 }
 

@@ -11,6 +11,12 @@ import {
   SNAPSHOT_POLL_INTERVAL_MS,
 } from "./constants";
 import {buildDatasetFilter, DiscoveryFilterInput} from "./discoveryFilters";
+import {
+  extractBearerToken,
+  verifyFirebaseIdToken,
+  fetchUserByFirebaseUid,
+} from "../auth/authHelpers";
+import {applyCors} from "../shared/cors";
 
 interface DiscoveryRequestBody {
   filters: DiscoveryFilterInput[];
@@ -52,12 +58,42 @@ function parseRequestBody(body: unknown): DiscoveryRequestBody | null {
  * `Influencer`.
  */
 export const discovery = onRequest(
-  {secrets: [brightDataApiToken], timeoutSeconds: 600, invoker: "public"},
+  {
+    secrets: [brightDataApiToken],
+    timeoutSeconds: 3600,
+    memory: "512MiB",
+    invoker: "public",
+  },
   async (request, response) => {
+    if (applyCors(request, response)) return;
+
     if (request.method !== "POST") {
       response.status(405).json({error: "Use POST"});
       return;
     }
+
+    const idToken = extractBearerToken(request.headers.authorization);
+    if (!idToken) {
+      response.status(401).json({error: "Missing Authorization: Bearer <idToken>"});
+      return;
+    }
+
+    let workspaceId: string;
+    try {
+      const firebaseUid = await verifyFirebaseIdToken(idToken);
+      const user = await fetchUserByFirebaseUid(firebaseUid);
+      if (!user) {
+        response.status(404).json({error: "No user record found for this account"});
+        return;
+      }
+      workspaceId = user.workspaceId;
+    } catch (err) {
+      logger.warn("discovery: invalid or expired ID token", err);
+      response.status(401).json({error: "Invalid or expired ID token"});
+      return;
+    }
+
+    logger.info("discovery: request from workspace", {workspaceId});
 
     const parsedBody = parseRequestBody(request.body);
     if (!parsedBody) {

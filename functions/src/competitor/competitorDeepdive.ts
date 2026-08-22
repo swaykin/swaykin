@@ -117,7 +117,7 @@ export const competitorDeepdive = onRequest(
             verified: profile.verified,
             avgEngagementRate: roundTo(profile.avgEngagementRate, 2),
             postingFrequencyPerWeek: computePostingFrequency(posts),
-            topHashtags: computeTopHashtags(posts).map((h) => h.tag),
+            topHashtags: computeTopHashtags(posts),
             collaborators: computeCollaborators(posts),
             recentPosts: posts.map((post) => ({
               postUrl: post.postUrl,
