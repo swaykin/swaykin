@@ -40,12 +40,12 @@ export type PostsTriggerResult =
  */
 export async function triggerPostsDiscovery({
   profileUrl,
-  numReels,
+  numPosts,
   limitPerInput,
   apiToken,
 }: {
   profileUrl: string;
-  numReels: number;
+  numPosts: number;
   limitPerInput: number;
   apiToken: string;
 }): Promise<PostsTriggerResult> {
@@ -61,7 +61,7 @@ export async function triggerPostsDiscovery({
     },
     body: JSON.stringify({
       input: [
-        {url: profileUrl, num_of_posts: numReels, post_type: "Reel"},
+        {url: profileUrl, num_of_posts: numPosts},
       ],
       limit_per_input: limitPerInput,
     }),

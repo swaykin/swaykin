@@ -21,6 +21,7 @@ export interface ProfileUpsertData {
   igHandle: string;
   type: string;
   name: string;
+  bio?: string | null;
   avatarUrl?: string | null;
   followers?: number | null;
   followings?: number | null;

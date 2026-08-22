@@ -122,6 +122,7 @@ export const competitorDeepdive = onRequest(
             recentPosts: posts.map((post) => ({
               postUrl: post.postUrl,
               type: post.type,
+              thumbnailUrl: post.thumbnailUrl,
               likes: post.likes,
               comments: post.comments,
               estimatedViews: post.estimatedViews,
