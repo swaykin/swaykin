@@ -1,3 +1,4 @@
+import * as logger from "firebase-functions/logger";
 import {
   triggerPostsDiscovery,
   pollPostsSnapshotUntilReady,
@@ -8,12 +9,40 @@ import {
   SNAPSHOT_POLL_TIMEOUT_MS,
   SNAPSHOT_POLL_INTERVAL_MS,
 } from "../brightdata/constants";
+import {brightDataDatasetId} from "../config";
 import {refreshProfileStats} from "./profileRepo";
 import {upsertPosts} from "./postRepo";
 import {extractProfileData, toPostUpsertData} from "./mapping";
+import {fetchProfileDetails} from "./profileDetailsClient";
 
-const NUM_REELS = 20;
+const NUM_POSTS = 30;
 const LIMIT_PER_INPUT = 30;
+
+/**
+ * @param {string} profileUrl Instagram profile URL.
+ * @param {string} apiToken Bright Data API bearer token.
+ * @return {Promise<unknown>} Raw posts data (array or single object).
+ */
+async function fetchRawPostsData(
+  profileUrl: string,
+  apiToken: string
+): Promise<unknown> {
+  const triggerResult = await triggerPostsDiscovery({
+    profileUrl,
+    numPosts: NUM_POSTS,
+    limitPerInput: LIMIT_PER_INPUT,
+    apiToken,
+  });
+
+  return triggerResult.ready ?
+    triggerResult.data :
+    await pollPostsSnapshotUntilReady({
+      snapshotId: triggerResult.snapshotId,
+      apiToken,
+      timeoutMs: SNAPSHOT_POLL_TIMEOUT_MS,
+      intervalMs: SNAPSHOT_POLL_INTERVAL_MS,
+    });
+}
 
 export interface FetchResult {
   followers: number | null;
@@ -48,21 +77,18 @@ export async function fetchAndPersistCompetitor({
   apiToken: string;
   profileType?: string;
 }): Promise<FetchResult> {
-  const triggerResult = await triggerPostsDiscovery({
-    profileUrl,
-    numReels: NUM_REELS,
-    limitPerInput: LIMIT_PER_INPUT,
-    apiToken,
-  });
-
-  const rawData = triggerResult.ready ?
-    triggerResult.data :
-    await pollPostsSnapshotUntilReady({
-      snapshotId: triggerResult.snapshotId,
-      apiToken,
-      timeoutMs: SNAPSHOT_POLL_TIMEOUT_MS,
-      intervalMs: SNAPSHOT_POLL_INTERVAL_MS,
-    });
+  const [rawData, profileDetails] = await Promise.all([
+    fetchRawPostsData(profileUrl, apiToken),
+    fetchProfileDetails(profileUrl, brightDataDatasetId.value(), apiToken).catch(
+      (err) => {
+        logger.warn(
+          `fetchAndPersistCompetitor: profile-details fetch failed for ${igHandle}`,
+          err
+        );
+        return null;
+      }
+    ),
+  ]);
 
   const rawPosts = (Array.isArray(rawData) ? rawData : [rawData]).filter(
     (p): p is RawBrightDataPost => typeof p === "object" && p !== null
@@ -76,6 +102,22 @@ export async function fetchAndPersistCompetitor({
 
   const selectedPosts = sortPostsByDateDesc(rawPosts);
   const profileData = extractProfileData(rawPosts, igHandle, profileType);
+
+  if (profileDetails) {
+    if (profileDetails.name) profileData.name = profileDetails.name;
+    if (profileDetails.bio) profileData.bio = profileDetails.bio;
+    if (profileDetails.followings !== undefined) {
+      profileData.followings = profileDetails.followings;
+    }
+    if (profileDetails.igAccountId) {
+      // No Profile column for Bright Data's own account id yet — logged only,
+      // ready to backfill once one exists (earmarked as a future Profile PK).
+      logger.info(
+        `fetchAndPersistCompetitor: igAccountId for ${igHandle} = ` +
+        profileDetails.igAccountId
+      );
+    }
+  }
 
   // Bright Data occasionally returns a malformed/non-array payload that
   // still passes the `rawPosts.length === 0` check above (e.g. a single
