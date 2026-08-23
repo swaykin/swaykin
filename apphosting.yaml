@@ -33,6 +33,12 @@ env:
       - BUILD
       - RUNTIME
 
+  - variable: NEXT_PUBLIC_CLOUD_FUNCTIONS_BASE_URL
+    value: https://asia-south1-swaykin-ai.cloudfunctions.net
+    availability:
+      - BUILD
+      - RUNTIME
+
   # Grant access to secrets in Cloud Secret Manager.
   # You can create secrets with the CLI command `firebase apphosting:secrets:set <secretName>`.
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters

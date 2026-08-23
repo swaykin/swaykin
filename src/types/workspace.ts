@@ -1,6 +1,6 @@
 export type WorkspaceDetails = {
   descriptions: string;
-  igusername: string;
+  igUsername: string;
   website: string;
   audience: string;
   voice: string;

@@ -4,7 +4,7 @@ import {
   type AvatarOverrides,
   type AvatarProps,
 } from "baseui/avatar";
-import { getEntityColorByName } from "@/lib/entityColor";
+import { getEntityColor } from "@/lib/entityColor";
 
 type AvatarOwnProps = AvatarProps & {
   fillColor?: string;
@@ -19,7 +19,7 @@ export const Avatar = ({
 }: AvatarOwnProps) => {
   // No caller-supplied color — pick one deterministically from the entity's own name, rather
   // than every caller having to compute and pass one down (see lib/entityColor.ts).
-  const backgroundColor = fillColor ?? getEntityColorByName(props.name ?? "");
+  const backgroundColor = fillColor ?? getEntityColor(props.name ?? "").color;
 
   const defaultOverrides: AvatarOverrides = {
     Root: { style: { backgroundColor } },

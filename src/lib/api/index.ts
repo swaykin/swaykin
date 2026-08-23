@@ -1,8 +1,11 @@
 import { auth } from "@/lib/firebase";
 
 const functionsBaseUrl = process.env.NEXT_PUBLIC_FUNCTIONS_BASE_URL as string;
+const cloudFunctionsBaseUrl = process.env
+  .NEXT_PUBLIC_CLOUD_FUNCTIONS_BASE_URL as string;
 
 const fetchWithAuth = async (
+  baseUrl: string,
   path: string,
   forceRefresh: boolean,
   method: "GET" | "POST",
@@ -11,7 +14,7 @@ const fetchWithAuth = async (
   const idToken = await auth.currentUser?.getIdToken(forceRefresh);
   if (!idToken) throw new Error("User is not authenticated");
 
-  return fetch(`${functionsBaseUrl}${path}`, {
+  return fetch(`${baseUrl}${path}`, {
     method,
     headers: {
       Authorization: `Bearer ${idToken}`,
@@ -23,13 +26,14 @@ const fetchWithAuth = async (
 
 /** Retries once with a force-refreshed ID token on a 401, per the backend's auth contract. */
 const request = async <T>(
+  baseUrl: string,
   path: string,
   method: "GET" | "POST",
   body?: unknown,
 ): Promise<T> => {
-  let res = await fetchWithAuth(path, false, method, body);
+  let res = await fetchWithAuth(baseUrl, path, false, method, body);
   if (res.status === 401) {
-    res = await fetchWithAuth(path, true, method, body);
+    res = await fetchWithAuth(baseUrl, path, true, method, body);
   }
 
   if (!res.ok) {
@@ -41,7 +45,13 @@ const request = async <T>(
 };
 
 export const api = {
-  get: <T>(path: string) => request<T>(path, "GET"),
-  post: <T>(path: string, body?: unknown) => request<T>(path, "POST", body),
-  request,
+  get: <T>(path: string, direct = false) =>
+    request<T>(direct ? cloudFunctionsBaseUrl : functionsBaseUrl, path, "GET"),
+  post: <T>(path: string, body?: unknown, direct = false) =>
+    request<T>(
+      direct ? cloudFunctionsBaseUrl : functionsBaseUrl,
+      path,
+      "POST",
+      body,
+    ),
 };

@@ -5,7 +5,11 @@ import { Textarea } from "@/infra/baseweb/Textarea";
 import type { WorkspaceDetails } from "@/types/workspace";
 import { FormInput } from "./FormInput";
 
-const LABEL_STYLE = { fontSize: "12.5px", fontWeight: 600, color: "var(--sk-text)" };
+const LABEL_STYLE = {
+  fontSize: "12.5px",
+  fontWeight: 600,
+  color: "var(--sk-text)",
+};
 
 type BrandProfileFormState = WorkspaceDetails & { name: string };
 
@@ -48,11 +52,11 @@ export const BrandProfileFields = ({
       backgroundColor="var(--sk-surface-sunken)"
     />
     <FormInput
-      id="igusername"
+      id="igUsername"
       label="Instagram handle"
       required
       type="userName"
-      value={details.igusername}
+      value={details.igUsername}
       onAction={onAction}
       placeholder="yourbrand"
       backgroundColor="var(--sk-surface-sunken)"
