@@ -185,6 +185,9 @@ type Profile @table {
   lastStatsUpdatedAt: Timestamp
   createdAt: Timestamp!
   brightDataSnapshotId: String
+  postHashtags: [String]
+  bioHashtags: [String]
+  categoryName: String
 }
 
 type Post @table {
@@ -204,6 +207,7 @@ type Post @table {
   engagementRatePercent: Float
   estimatedReach: Int
   collaborators: [String] # from BrightData coauthor_producers (official Instagram collab feature)
+  location: String
   postedAt: Timestamp!
   fetchedAt: Timestamp!
   source: String # "brightdata" | "instagram_api" | "manual"
@@ -216,4 +220,19 @@ type CreditTransaction @table {
   activityType: String
   creditsDelta: Int!
   balanceAfter: Int!
+}
+
+type DiscoveryJob @table {
+  id: UUID! @default(expr: "uuidV4()")
+  workspace: Workspace!
+  snapshotId: String
+  filters: String!
+  recordsLimit: Int!
+  status: String!
+  dbResultCount: Int
+  bdResultCount: Int
+  insertedCount: Int
+  error: String
+  createdAt: Timestamp! @default(expr: "request.time")
+  completedAt: Timestamp
 }
