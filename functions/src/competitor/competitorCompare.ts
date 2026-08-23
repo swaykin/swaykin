@@ -12,6 +12,10 @@ import {getWorkspaceCompetitorMap} from "./workspaceCompetitors";
 import {findProfilesByIds} from "./profileRepo";
 import {findPostsByProfileId} from "./postRepo";
 import {
+  getActiveCompetitorProfileIds,
+  resolveCompetitorProfileIds,
+} from "./resolveCompetitorProfileIds";
+import {
   computePostingFrequency,
   computeEngagementRate,
   computeAvgReachPerPost,
@@ -49,7 +53,8 @@ async function fetchWorkspaceBrand(workspaceId: string): Promise<WorkspaceBrand 
 
 /**
  * Compares competitors against the workspace's own brand across key metrics.
- * POST body: `{ profileIds?: string[] }` — omit to compare all active competitors.
+ * POST body: `{ profileIds?: string[] }` — handles, profile URLs, or legacy
+ * UUIDs. Omit to compare all active competitors.
  * Metrics computed on-the-go from stored Post rows; no BrightData call at read time.
  */
 export const competitorCompare = onRequest(
@@ -100,10 +105,8 @@ export const competitorCompare = onRequest(
       }
 
       const validIds = rawIds ?
-        rawIds.filter((id) => competitorMap[id]) :
-        Object.entries(competitorMap)
-          .filter(([, meta]) => meta.status === "active")
-          .map(([id]) => id);
+        await resolveCompetitorProfileIds(rawIds, competitorMap) :
+        getActiveCompetitorProfileIds(competitorMap);
 
       if (validIds.length === 0) {
         response.status(404).json({error: "No active competitors found for this workspace"});

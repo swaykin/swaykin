@@ -10,6 +10,10 @@ import {getWorkspaceCompetitorMap} from "./workspaceCompetitors";
 import {findProfilesByIds} from "./profileRepo";
 import {findPostsByProfileId} from "./postRepo";
 import {
+  getActiveCompetitorProfileIds,
+  resolveCompetitorProfileIds,
+} from "./resolveCompetitorProfileIds";
+import {
   computePostingFrequency,
   computeTopHashtags,
   computeCollaborators,
@@ -35,8 +39,9 @@ function roundTo(value: number | null, decimals: number): number | null {
  * call is made at read time.
  *
  * Route: GET /v1/competitors/deepdive
- * Query param: `?profileIds=<uuid>,<uuid>,...` (comma-separated, max 20).
- * Only IDs already in the calling workspace's competitor map are processed.
+ * Query param: `?profileIds=<handle>,<handle>,...` (comma-separated).
+ * Each value may be an Instagram handle, profile URL, or legacy Profile UUID.
+ * Omit to return all active competitors for this workspace.
  */
 export const competitorDeepdive = onRequest(
   {invoker: "public"},
@@ -77,20 +82,12 @@ export const competitorDeepdive = onRequest(
       const competitorMap = await getWorkspaceCompetitorMap(user.workspaceId);
 
       const rawIds = request.query.profileIds as string | undefined;
-      let validIds: string[];
-
-      if (rawIds) {
-        const requestedIds = rawIds
-          .split(",")
-          .map((id) => id.trim())
-          .filter(Boolean);
-        validIds = requestedIds.filter((id) => competitorMap[id]);
-      } else {
-        // No filter — return all active competitors for this workspace
-        validIds = Object.entries(competitorMap)
-          .filter(([, meta]) => meta.status === "active")
-          .map(([id]) => id);
-      }
+      const validIds = rawIds ?
+        await resolveCompetitorProfileIds(
+          rawIds.split(",").map((id) => id.trim()).filter(Boolean),
+          competitorMap
+        ) :
+        getActiveCompetitorProfileIds(competitorMap);
 
       if (validIds.length === 0) {
         response.status(404).json({
@@ -123,6 +120,7 @@ export const competitorDeepdive = onRequest(
               postUrl: post.postUrl,
               type: post.type,
               thumbnailUrl: post.thumbnailUrl,
+              caption: post.caption,
               likes: post.likes,
               comments: post.comments,
               estimatedViews: post.estimatedViews,

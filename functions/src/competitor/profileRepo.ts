@@ -69,6 +69,26 @@ export async function findProfileByHandle(
 }
 
 /**
+ * @param {string[]} igHandles Instagram handles to look up (dedup keys).
+ * @return {Promise<ProfileRow[]>} Matching global Profile rows.
+ */
+export async function findProfilesByHandles(
+  igHandles: string[]
+): Promise<ProfileRow[]> {
+  if (igHandles.length === 0) return [];
+  const query = `query($handles: [String!]!) {
+    profiles(where: {igHandle: {in: $handles}}) {
+      ${PROFILE_FIELDS}
+    }
+  }`;
+  const res = await dc.executeGraphqlRead<
+    { profiles: ProfileRow[] },
+    { handles: string[] }
+  >(query, {variables: {handles: igHandles}});
+  return res.data.profiles;
+}
+
+/**
  * @param {string[]} profileIds Profile row ids to fetch.
  * @return {Promise<ProfileRow[]>} Matching global Profile rows.
  */

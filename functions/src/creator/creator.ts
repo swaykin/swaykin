@@ -35,7 +35,7 @@ function shapeProfile(profile: ProfileRow, posts: PostRow[]) {
     avgEngagementRate: profile.avgEngagementRate,
     verified: profile.verified,
     email: profile.email,
-    topHashtags: computeTopHashtags(posts, 5).map((h) => h.tag),
+    topHashtags: computeTopHashtags(posts, 5),
     collaborators: computeCollaborators(posts),
   };
 }

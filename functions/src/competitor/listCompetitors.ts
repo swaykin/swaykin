@@ -60,6 +60,8 @@ export const listCompetitors = onRequest(
       const profiles = await findProfilesByIds(matchingIds);
 
       const results = profiles.map((profile) => ({
+        profileId: profile.id,
+        igUsername: profile.igHandle,
         name: profile.name,
         verified: profile.verified,
         lastStatsUpdatedAt: profile.lastStatsUpdatedAt,
