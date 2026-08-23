@@ -8,12 +8,17 @@ type ScrapedProfile = Record<string, unknown>;
 interface InfluencerRow {
   name: string;
   handle: string;
-  igUrl?: string;
+  igUrl: string | null;
   platform: string;
-  verified?: boolean;
-  followers?: number;
-  avatarUrl?: string;
-  bio?: string;
+  verified: boolean | null;
+  followers: number | null;
+  avatarUrl: string | null;
+  bio: string | null;
+  email: string | null;
+  phone: string | null;
+  engagementRate: number | null;
+  country: string | null;
+  niche: string | null;
 }
 
 /**
@@ -33,18 +38,28 @@ function toInfluencerRow(item: ScrapedProfile): InfluencerRow | null {
   const name = pickField(item, ["full_name", "profile_name", "name"]);
   const followers = pickField(item, ["followers", "followers_count"]);
   const verified = pickField(item, ["is_verified", "verified"]);
+  const engagementRate = pickField(item, ["engagement_rate", "avg_engagement"]);
+  const hashtags = pickField(item, ["post_hashtags", "hashtags"]);
+  const firstHashtag = Array.isArray(hashtags) && hashtags.length > 0
+    ? String(hashtags[0])
+    : undefined;
 
   return {
     name: typeof name === "string" && name.length > 0 ? name : handle,
     handle,
-    igUrl: asString(pickField(item, ["url", "profile_url", "input"])),
+    igUrl: asString(pickField(item, ["url", "profile_url", "input"])) ?? null,
     platform: "instagram",
-    verified: typeof verified === "boolean" ? verified : undefined,
-    followers: typeof followers === "number" ? followers : undefined,
+    verified: typeof verified === "boolean" ? verified : null,
+    followers: typeof followers === "number" ? followers : null,
     avatarUrl: asString(
       pickField(item, ["profile_image_link", "avatar", "profile_pic_url"])
-    ),
-    bio: asString(pickField(item, ["biography", "bio"])),
+    ) ?? null,
+    bio: asString(pickField(item, ["biography", "bio"])) ?? null,
+    email: asString(pickField(item, ["email_address", "email"])) ?? null,
+    phone: asString(pickField(item, ["phone", "contact_phone"])) ?? null,
+    engagementRate: typeof engagementRate === "number" ? engagementRate : null,
+    country: asString(pickField(item, ["country", "city"])) ?? null,
+    niche: firstHashtag ?? null,
   };
 }
 

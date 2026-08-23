@@ -9,6 +9,10 @@ import {
   verifyFirebaseIdToken,
   fetchUserByFirebaseUid,
 } from "../auth/authHelpers";
+import {findProfileByHandle, createProfile} from "../competitor/profileRepo";
+import {normalizeInstagramAccount} from "../competitor/normalizeAccount";
+import {fetchAndPersistCompetitor} from "../competitor/competitorFetchWorker";
+import {brightDataApiToken} from "../config";
 
 const dc = getDataConnect(connectorConfig);
 
@@ -152,6 +156,42 @@ async function handleGet(workspaceId: string, res: Response): Promise<void> {
 }
 
 /**
+ * Fire-and-forget: find/create the Profile row then kick off the full
+ * BrightData fetch. Called after the HTTP response has already been sent,
+ * so the caller must NOT await this.
+ * @param {string} igHandle Instagram handle that was just saved.
+ * @return {Promise<void>}
+ */
+async function runWorkspaceProfileFetch(igHandle: string): Promise<void> {
+  const normalized = normalizeInstagramAccount(igHandle);
+  if (!normalized) {
+    logger.warn(`workspace: cannot normalize handle "${igHandle}" — skipping`);
+    return;
+  }
+
+  const existing = await findProfileByHandle(normalized.igHandle);
+  const profileId =
+    existing?.id ??
+    (await createProfile({
+      igHandle: normalized.igHandle,
+      type: "own",
+      name: normalized.igHandle,
+    }));
+
+  const result = await fetchAndPersistCompetitor({
+    profileId,
+    igHandle: normalized.igHandle,
+    profileUrl: normalized.profileUrl,
+    apiToken: brightDataApiToken.value(),
+    profileType: "own",
+  });
+  logger.info(
+    `workspace: background fetch done for ${igHandle} ` +
+    `(${result.postsFetched} posts, ${result.followers} followers)`
+  );
+}
+
+/**
  * @param {string} workspaceId Workspace UUID.
  * @param {Request} req Express request.
  * @param {Response} res Express response.
@@ -180,6 +220,10 @@ async function handlePost(
     return;
   }
 
+  // Fetch before update so we can detect an igHandle change.
+  const before = await fetchWorkspace(workspaceId);
+  const oldHandle = before?.instagramHandle ?? null;
+
   const mutation = `mutation($id: UUID!, $data: Workspace_Data!) {
     workspace_update(id: $id, data: $data)
   }`;
@@ -194,11 +238,33 @@ async function handlePost(
     res.status(404).json({error: "Workspace not found after update"});
     return;
   }
+
+  // Trigger background profile+posts fetch when igHandle is set or changed.
+  const newHandle = body.igUsername;
+  const handleChanged =
+    newHandle !== undefined &&
+    newHandle !== null &&
+    newHandle !== "" &&
+    newHandle !== oldHandle;
+
   res.status(200).json(toResponse(updated));
+
+  // Fire and forget after the response — caller sees no added latency.
+  if (handleChanged) {
+    runWorkspaceProfileFetch(newHandle as string).catch((err) =>
+      logger.warn("workspace: background profile fetch failed", err)
+    );
+  }
 }
 
 export const workspace = onRequest(
-  {invoker: "public"},
+  {
+    invoker: "public",
+    secrets: [brightDataApiToken],
+    // Background profile+posts fetch runs after the HTTP response; needs headroom
+    // for two sequential Bright Data scrapes (~90–200s each).
+    timeoutSeconds: 540,
+  },
   async (request, response) => {
     if (applyCors(request, response)) return;
 

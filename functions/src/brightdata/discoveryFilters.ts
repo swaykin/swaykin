@@ -1,75 +1,42 @@
 import {
   DatasetFilter,
   DatasetFilterCondition,
+  DatasetFilterNode,
 } from "./instagramProfileFilterClient";
-
-/** Confirmed numeric range fields from Brightdata dataset gd_l1vikfch901nx3by4. */
-const RANGE_FIELD_NAMES: Record<string, string> = {
-  followers: "followers",
-  following: "following",
-};
-
-/** Confirmed operators from Brightdata docs for this dataset. */
-const OPERATOR_ALIASES: Record<string, string> = {
-  "equal": "=",
-  "equals": "=",
-  "is": "=",
-  "=": "=",
-  "==": "=",
-  "notequal": "!=",
-  "!=": "!=",
-  "greaterthan": ">",
-  ">": ">",
-  "greaterthanorequal": ">=",
-  ">=": ">=",
-  "lessthan": "<",
-  "<": "<",
-  "lessthanorequal": "<=",
-  "<=": "<=",
-  "in": "in",
-  "notin": "not_in",
-  "not_in": "not_in",
-  "includes": "includes",
-  "notincludes": "not_includes",
-  "not_includes": "not_includes",
-  "exists": "exists",
-  "notexists": "not_exists",
-  "not_exists": "not_exists",
-};
 
 interface RangeFilterInput {
   type: "followers" | "following";
   value: { min?: number; max?: number };
 }
 
-/** Single hashtag match against post_hashtags. */
-interface HashtagFilterInput {
-  type: "hashtag";
-  value: string;
-}
-
-/**
- * OR match — combines hashtags, categories, and locations into one
- * `post_hashtags in [...]` condition. Empty array is a no-op.
- */
-interface HashtagsORFilterInput {
-  type: "hashtagsOR";
+/** Category terms → OR on biography, post_hashtags, posts:caption */
+interface CategoryFilterInput {
+  type: "category";
   values: string[];
 }
 
-/** Filter on is_verified boolean field. */
+/** Location terms → OR on biography, posts:caption, posts:post_hashtags */
+interface LocationFilterInput {
+  type: "location";
+  values: string[];
+}
+
+/** Hashtag terms → OR on bio_hashtags, post_hashtags, posts:post_hashtags */
+interface HashtagFilterInput {
+  type: "hashtag";
+  values: string[];
+}
+
 interface VerifiedFilterInput {
   type: "isVerified";
   value: boolean;
 }
 
-/** Filter on email_address existence. */
 interface EmailExistsFilterInput {
   type: "hasEmail";
-  value: boolean; // true → exists, false → not_exists
+  value: boolean;
 }
 
-/** Escape hatch — pass any Brightdata field/operator/value directly. */
 interface RawFieldFilterInput {
   type: "field";
   field: string;
@@ -79,87 +46,136 @@ interface RawFieldFilterInput {
 
 export type DiscoveryFilterInput =
   | RangeFilterInput
+  | CategoryFilterInput
+  | LocationFilterInput
   | HashtagFilterInput
-  | HashtagsORFilterInput
   | VerifiedFilterInput
   | EmailExistsFilterInput
   | RawFieldFilterInput;
 
+export type DiscoveryTermBlock =
+  | {kind: "category"; value: string}
+  | {kind: "location"; value: string}
+  | {kind: "hashtag"; value: string};
+
+/** Term blocks (category / location / hashtag) in request order — ANDed in BD + DB. */
+export function extractTermBlocks(
+  filters: DiscoveryFilterInput[]
+): DiscoveryTermBlock[] {
+  const blocks: DiscoveryTermBlock[] = [];
+  for (const input of filters) {
+    if (input.type === "category" && input.values[0]) {
+      blocks.push({kind: "category", value: input.values[0]});
+    } else if (input.type === "location" && input.values[0]) {
+      blocks.push({kind: "location", value: input.values[0]});
+    } else if (input.type === "hashtag" && input.values[0]) {
+      blocks.push({kind: "hashtag", value: input.values[0]});
+    }
+  }
+  return blocks;
+}
+
 /**
- * Translates app-level filters into Bright Data's
- * `{ operator, filters: [{ name, operator, value }] }` shape.
- * All conditions are ANDed together.
- * @param {DiscoveryFilterInput[]} inputs Filter conditions.
- * @return {DatasetFilter} Bright Data filter payload.
+ * Builds the nested Brightdata filter from app-level filter inputs.
+ *
+ * Scalar conditions (followers, verified, email) → inner `and` block.
+ * Each category/location/hashtag value → its own `or` block:
+ *   category "fashion"  → OR[biography includes, post_hashtags array_includes, posts:caption includes]
+ *   location "mumbai"   → OR[biography includes, posts:caption includes, posts:post_hashtags array_includes]
+ *   hashtag  "skincare" → OR[bio_hashtags array_includes, post_hashtags array_includes, posts:post_hashtags array_includes]
  */
 export function buildDatasetFilter(
   inputs: DiscoveryFilterInput[]
 ): DatasetFilter {
-  const filters: DatasetFilterCondition[] = inputs.flatMap(toConditions);
+  const scalarConditions: DatasetFilterCondition[] = [];
+  const termBlocks: DatasetFilter[] = [];
 
-  if (filters.length === 0) {
+  for (const input of inputs) {
+    if (input.type === "followers" || input.type === "following") {
+      const name = input.type;
+      if (input.value.min !== undefined) {
+        scalarConditions.push({name, operator: ">=", value: input.value.min});
+      }
+      if (input.value.max !== undefined) {
+        scalarConditions.push({name, operator: "<=", value: input.value.max});
+      }
+      continue;
+    }
+
+    if (input.type === "isVerified") {
+      scalarConditions.push({name: "is_verified", operator: "=", value: input.value});
+      continue;
+    }
+
+    if (input.type === "hasEmail" && input.value) {
+      scalarConditions.push({name: "email_address", operator: "is_not_null"});
+      continue;
+    }
+
+    if (input.type === "category") {
+      if (input.values[0]) termBlocks.push(categoryOrBlock(input.values[0]));
+      continue;
+    }
+
+    if (input.type === "location") {
+      if (input.values[0]) termBlocks.push(locationOrBlock(input.values[0]));
+      continue;
+    }
+
+    if (input.type === "hashtag") {
+      if (input.values[0]) termBlocks.push(hashtagOrBlock(input.values[0]));
+      continue;
+    }
+
+    if (input.type === "field") {
+      scalarConditions.push({name: input.field, operator: input.operator, value: input.value});
+    }
+  }
+
+  const topLevel: DatasetFilterNode[] = [];
+  if (scalarConditions.length > 0) {
+    topLevel.push({operator: "and", filters: scalarConditions});
+  }
+  for (const block of termBlocks) {
+    topLevel.push(block);
+  }
+
+  if (topLevel.length === 0) {
     throw new Error("At least one filter condition is required");
   }
 
-  return {operator: "and", filters};
+  return {operator: "and", filters: topLevel};
 }
 
-function toConditions(input: DiscoveryFilterInput): DatasetFilterCondition[] {
-  if (input.type === "followers" || input.type === "following") {
-    return rangeToConditions(input);
-  }
-
-  if (input.type === "hashtag") {
-    return [{name: "post_hashtags", operator: "=", value: input.value}];
-  }
-
-  if (input.type === "hashtagsOR") {
-    if (input.values.length === 0) return [];
-    return [{name: "post_hashtags", operator: "in", value: input.values}];
-  }
-
-  if (input.type === "isVerified") {
-    return [{name: "is_verified", operator: "=", value: input.value}];
-  }
-
-  if (input.type === "hasEmail") {
-    return [{
-      name: "email_address",
-      operator: input.value ? "exists" : "not_exists",
-      value: true,
-    }];
-  }
-
-  // raw field passthrough
-  const raw = input as RawFieldFilterInput;
-  return [{
-    name: raw.field,
-    operator: normalizeOperator(raw.operator),
-    value: raw.value,
-  }];
+function categoryOrBlock(value: string): DatasetFilter {
+  return {
+    operator: "or",
+    filters: [
+      {name: "biography", operator: "includes", value},
+      {name: "post_hashtags", operator: "array_includes", value},
+      {name: "posts:caption", operator: "includes", value},
+    ],
+  };
 }
 
-function rangeToConditions(input: RangeFilterInput): DatasetFilterCondition[] {
-  const fieldName = RANGE_FIELD_NAMES[input.type];
-  const conditions: DatasetFilterCondition[] = [];
-
-  if (input.value.min !== undefined) {
-    conditions.push({name: fieldName, operator: ">=", value: input.value.min});
-  }
-  if (input.value.max !== undefined) {
-    conditions.push({name: fieldName, operator: "<=", value: input.value.max});
-  }
-  if (conditions.length === 0) {
-    throw new Error(`Filter "${input.type}" needs a min or max value`);
-  }
-
-  return conditions;
+function locationOrBlock(value: string): DatasetFilter {
+  return {
+    operator: "or",
+    filters: [
+      {name: "biography", operator: "includes", value},
+      {name: "posts:caption", operator: "includes", value},
+      {name: "posts:post_hashtags", operator: "array_includes", value},
+    ],
+  };
 }
 
-function normalizeOperator(operator: string): string {
-  const normalized = OPERATOR_ALIASES[operator.toLowerCase()];
-  if (!normalized) {
-    throw new Error(`Unsupported filter operator: "${operator}"`);
-  }
-  return normalized;
+function hashtagOrBlock(value: string): DatasetFilter {
+  return {
+    operator: "or",
+    filters: [
+      {name: "bio_hashtags", operator: "array_includes", value},
+      {name: "post_hashtags", operator: "array_includes", value},
+      {name: "posts:post_hashtags", operator: "array_includes", value},
+    ],
+  };
 }

@@ -1,3 +1,5 @@
+import {shortcodeFromInstagramUrl} from "../brightdata/discoveryPostMapper";
+import {pickField, asString, asNumber} from "../brightdata/pickField";
 import {RawBrightDataPost} from "./brightDataPostsClient";
 import {ProfileUpsertData} from "./profileRepo";
 import {PostUpsertData} from "./postRepo";
@@ -6,6 +8,43 @@ import {PostUpsertData} from "./postRepo";
  * doesn't return real view counts even for reels — confirmed empirically
  * across multiple accounts/snapshots). */
 const ESTIMATED_VIEWS_MULTIPLIER = 15;
+
+/**
+ * Maps a Bright Data Profiles-dataset record onto our global Profile schema.
+ * @param {Record<string, unknown>} profile Raw profile scrape row.
+ * @param {string} igHandle Canonical Instagram handle.
+ * @param {string} profileType Profile type label (e.g. "own", "competitor").
+ * @return {ProfileUpsertData} Mapped profile fields ready to persist.
+ */
+export function mapBrightDataProfileRecord(
+  profile: Record<string, unknown>,
+  igHandle: string,
+  profileType: string
+): ProfileUpsertData {
+  const verifiedRaw = pickField(profile, ["is_verified", "verified"]);
+
+  return {
+    igHandle,
+    type: profileType,
+    name:
+      asString(pickField(profile, ["full_name", "profile_name", "name"])) ??
+      igHandle,
+    bio: asString(pickField(profile, ["biography", "bio"])) ?? null,
+    avatarUrl:
+      asString(
+        pickField(profile, ["profile_image_link", "avatar", "profile_pic_url"])
+      ) ?? null,
+    followers:
+      asNumber(pickField(profile, ["followers", "followers_count"])) ?? null,
+    followings:
+      asNumber(pickField(profile, ["following", "following_count"])) ?? null,
+    postsCount: asNumber(pickField(profile, ["posts_count"])) ?? null,
+    avgEngagementRate:
+      asNumber(pickField(profile, ["avg_engagement", "engagement_rate"])) ??
+      null,
+    verified: typeof verifiedRaw === "boolean" ? verifiedRaw : null,
+  };
+}
 
 /**
  * Derives the shared profile-level fields (followers, avatar, etc.) from
@@ -44,7 +83,7 @@ export function extractProfileData(
  * @return {number | null} Average engagement rate percent, or null if
  *   followers is unknown/zero.
  */
-function calculateAvgEngagementRate(
+export function calculateAvgEngagementRate(
   posts: RawBrightDataPost[],
   followers: number | null
 ): number | null {
@@ -64,14 +103,25 @@ function calculateAvgEngagementRate(
  * @return {PostUpsertData | null} The row to upsert, or null if unusable
  *   (missing the fields required to dedupe/display it).
  */
+function normalizePostedAt(value: string): string {
+  return value.includes("T") ? value : new Date(value).toISOString();
+}
+
 export function toPostUpsertData(
   post: RawBrightDataPost,
   profileId: string,
   followers: number | null
 ): PostUpsertData | null {
-  if (!post.post_id || !post.url || !post.shortcode || !post.date_posted) {
-    return null;
-  }
+  const url = post.url;
+  if (!url) return null;
+
+  const postIdRaw = post.post_id ?? post.id;
+  const postId = postIdRaw != null ? String(postIdRaw) : null;
+  const shortcode =
+    post.shortcode ?? shortcodeFromInstagramUrl(url) ?? postId;
+  const datePosted = post.date_posted ?? post.datetime;
+
+  if (!postId || !shortcode || !datePosted) return null;
 
   const likes = post.likes ?? 0;
   const comments = post.num_comments ?? 0;
@@ -80,12 +130,12 @@ export function toPostUpsertData(
 
   return {
     profileId,
-    postUrl: post.url,
-    postId: post.post_id,
-    shortcode: post.shortcode,
+    postUrl: url,
+    postId,
+    shortcode,
     caption: post.description ?? null,
     type: post.content_type ?? "Image",
-    thumbnailUrl: post.thumbnail ?? null,
+    thumbnailUrl: post.thumbnail ?? post.image_url ?? null,
     mediaUrls: [...(post.photos ?? []), ...(post.videos ?? [])],
     likes,
     comments,
@@ -97,7 +147,7 @@ export function toPostUpsertData(
       (likes + comments) / followers * 100 :
       null,
     estimatedReach: estimatedViews,
-    postedAt: post.date_posted,
+    postedAt: normalizePostedAt(datePosted),
     source: "brightdata",
   };
 }

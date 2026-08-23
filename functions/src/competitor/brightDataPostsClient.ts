@@ -6,15 +6,18 @@ const POSTS_DATASET_ID = "gd_lk5ns7kz21pck8jpis";
 
 export interface RawBrightDataPost {
   post_id?: string;
+  id?: string | number;
   shortcode?: string;
   url?: string;
   description?: string;
   content_type?: string; // "Reel" | "Carousel" | "Image"
   date_posted?: string;
+  datetime?: string;
   likes?: number;
   num_comments?: number;
   hashtags?: string[];
   thumbnail?: string;
+  image_url?: string;
   photos?: string[];
   videos?: string[];
   video_view_count?: number;

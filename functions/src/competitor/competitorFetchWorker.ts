@@ -12,8 +12,13 @@ import {
 import {brightDataDatasetId} from "../config";
 import {refreshProfileStats} from "./profileRepo";
 import {upsertPosts} from "./postRepo";
-import {extractProfileData, toPostUpsertData} from "./mapping";
-import {fetchProfileDetails} from "./profileDetailsClient";
+import {
+  calculateAvgEngagementRate,
+  extractProfileData,
+  mapBrightDataProfileRecord,
+  toPostUpsertData,
+} from "./mapping";
+import {fetchRawProfileRecord} from "./profileDetailsClient";
 
 const NUM_POSTS = 30;
 const LIMIT_PER_INPUT = 30;
@@ -50,11 +55,10 @@ export interface FetchResult {
 }
 
 /**
- * Does the slow part: fetches an Instagram account's recent Reels from
- * Bright Data (a ~90-200s trigger+poll cycle), then refreshes the given
- * global Profile row's cached stats and upserts its Posts. Callers run
- * this from a background task (never directly behind Firebase Hosting's
- * ~60s rewrite timeout, which this routinely exceeds).
+ * Fetches an Instagram account from Bright Data in two sequential steps:
+ * Profiles dataset first (persist stats), then Posts dataset (persist posts).
+ * Callers that sit behind Firebase Hosting's ~60s rewrite timeout should run
+ * this in the background with a long function timeout.
  * @param {object} params Fetch parameters.
  * @param {string} params.profileId Existing global Profile row id — the
  *   caller must have already created a (possibly placeholder) row.
@@ -62,7 +66,7 @@ export interface FetchResult {
  * @param {string} params.profileUrl Normalized Instagram profile URL.
  * @param {string} params.apiToken Bright Data API bearer token.
  * @return {Promise<FetchResult>} Follower count and posts written.
- * @throws If Bright Data returns no usable data for this account.
+ * @throws If the Profiles scrape returns no usable data for this account.
  */
 export async function fetchAndPersistCompetitor({
   profileId,
@@ -77,51 +81,22 @@ export async function fetchAndPersistCompetitor({
   apiToken: string;
   profileType?: string;
 }): Promise<FetchResult> {
-  const [rawData, profileDetails] = await Promise.all([
-    fetchRawPostsData(profileUrl, apiToken),
-    fetchProfileDetails(profileUrl, brightDataDatasetId.value(), apiToken).catch(
-      (err) => {
-        logger.warn(
-          `fetchAndPersistCompetitor: profile-details fetch failed for ${igHandle}`,
-          err
-        );
-        return null;
-      }
-    ),
-  ]);
-
-  const rawPosts = (Array.isArray(rawData) ? rawData : [rawData]).filter(
-    (p): p is RawBrightDataPost => typeof p === "object" && p !== null
+  const rawProfile = await fetchRawProfileRecord(
+    profileUrl,
+    brightDataDatasetId.value(),
+    apiToken
   );
 
-  if (rawPosts.length === 0) {
-    throw new Error("No posts found for this account");
+  if (!rawProfile) {
+    throw new Error("Bright Data profile scrape returned no usable data");
   }
 
-  console.log("BrightData raw sample:", JSON.stringify(rawPosts[0]));
+  let profileData = mapBrightDataProfileRecord(
+    rawProfile,
+    igHandle,
+    profileType
+  );
 
-  const selectedPosts = sortPostsByDateDesc(rawPosts);
-  const profileData = extractProfileData(rawPosts, igHandle, profileType);
-
-  if (profileDetails) {
-    if (profileDetails.name) profileData.name = profileDetails.name;
-    if (profileDetails.bio) profileData.bio = profileDetails.bio;
-    if (profileDetails.followings !== undefined) {
-      profileData.followings = profileDetails.followings;
-    }
-    if (profileDetails.igAccountId) {
-      // No Profile column for Bright Data's own account id yet — logged only,
-      // ready to backfill once one exists (earmarked as a future Profile PK).
-      logger.info(
-        `fetchAndPersistCompetitor: igAccountId for ${igHandle} = ` +
-        profileDetails.igAccountId
-      );
-    }
-  }
-
-  // Bright Data occasionally returns a malformed/non-array payload that
-  // still passes the `rawPosts.length === 0` check above (e.g. a single
-  // stray object). Guard against persisting garbage profile stats.
   if (profileData.followers === null && profileData.postsCount === null) {
     throw new Error(
       "Something went wrong, upstream service is currently not providing data"
@@ -130,9 +105,47 @@ export async function fetchAndPersistCompetitor({
 
   await refreshProfileStats(profileId, profileData);
 
+  const rawData = await fetchRawPostsData(profileUrl, apiToken);
+  const rawPosts = (Array.isArray(rawData) ? rawData : [rawData]).filter(
+    (p): p is RawBrightDataPost => typeof p === "object" && p !== null
+  );
+
+  if (rawPosts.length === 0) {
+    logger.warn(
+      `fetchAndPersistCompetitor: profile saved for ${igHandle} but posts ` +
+      "scrape returned nothing"
+    );
+    return {followers: profileData.followers ?? null, postsFetched: 0};
+  }
+
+  const selectedPosts = sortPostsByDateDesc(rawPosts);
+  const followers = profileData.followers ?? null;
+
+  if (followers) {
+    const avgEngagementRate = calculateAvgEngagementRate(selectedPosts, followers);
+    if (avgEngagementRate !== profileData.avgEngagementRate) {
+      profileData = {...profileData, avgEngagementRate};
+      await refreshProfileStats(profileId, profileData);
+    }
+  } else {
+    const fromPosts = extractProfileData(selectedPosts, igHandle, profileType);
+    if (fromPosts.followers !== null || fromPosts.postsCount !== null) {
+      profileData = {...profileData, ...fromPosts};
+      await refreshProfileStats(profileId, profileData);
+    }
+  }
+
   const postRows = selectedPosts
     .map((p) => toPostUpsertData(p, profileId, profileData.followers ?? null))
     .filter((p): p is NonNullable<typeof p> => p !== null);
+
+  if (postRows.length === 0) {
+    logger.warn(
+      `fetchAndPersistCompetitor: ${rawPosts.length} raw posts for ${igHandle} ` +
+      "but none mapped — check BrightData field names"
+    );
+  }
+
   const postsFetched = await upsertPosts(postRows);
 
   return {followers: profileData.followers ?? null, postsFetched};

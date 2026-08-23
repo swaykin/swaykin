@@ -4,15 +4,18 @@ import type { DiscoveryFilters } from "../types";
 export type DiscoveryFilterInput =
   | { type: "followers"; value: { min?: number; max?: number } }
   | { type: "following"; value: { min?: number; max?: number } }
-  | { type: "hashtagsOR"; values: string[] }
+  | { type: "category"; values: string[] }
+  | { type: "location"; values: string[] }
+  | { type: "hashtag"; values: string[] }
   | { type: "isVerified"; value: boolean }
   | { type: "hasEmail"; value: boolean }
   | { type: "field"; field: string; operator: string; value: string | number | boolean };
 
-/**
- * Converts UI DiscoveryFilters into the backend DiscoveryFilterInput[] shape.
- * hashtags + categories + locations are OR-merged into one post_hashtags filter.
- */
+function normalizeTerms(terms: string[]): string[] {
+  return terms.map((t) => t.toLowerCase().replace(/^#/, "")).filter(Boolean);
+}
+
+/** Converts UI DiscoveryFilters into the backend DiscoveryFilterInput[] shape. */
 export function buildDiscoveryFilters(
   filters: DiscoveryFilters,
 ): DiscoveryFilterInput[] {
@@ -24,15 +27,19 @@ export function buildDiscoveryFilters(
     result.push({ type: "followers", value: { min: followerMin, max: followerMax } });
   }
 
-  // Merge hashtags + categories + locations → single OR filter on post_hashtags
-  const combinedTags = [
-    ...filters.hashtags,
-    ...filters.categories,
-    ...filters.locations,
-  ].map((t) => t.toLowerCase().replace(/^#/, "")).filter(Boolean);
+  const categories = normalizeTerms(filters.categories ?? []);
+  if (categories.length > 0) {
+    result.push({ type: "category", values: categories });
+  }
 
-  if (combinedTags.length > 0) {
-    result.push({ type: "hashtagsOR", values: combinedTags });
+  const locations = normalizeTerms(filters.locations ?? []);
+  if (locations.length > 0) {
+    result.push({ type: "location", values: locations });
+  }
+
+  const hashtags = normalizeTerms(filters.hashtags ?? []);
+  if (hashtags.length > 0) {
+    result.push({ type: "hashtag", values: hashtags });
   }
 
   if (filters.isVerified) {

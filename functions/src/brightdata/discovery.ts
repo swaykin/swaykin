@@ -5,18 +5,23 @@ import {
   triggerDatasetFilter,
   pollDatasetSnapshotUntilReady,
 } from "./instagramProfileFilterClient";
-import {saveScrapedInfluencers} from "./saveInfluencers";
+import {saveDiscoveryProfiles} from "./saveDiscoveryProfiles";
 import {
   SNAPSHOT_POLL_TIMEOUT_MS,
   SNAPSHOT_POLL_INTERVAL_MS,
+  MAX_RECORDS_LIMIT,
 } from "./constants";
 import {buildDatasetFilter, DiscoveryFilterInput} from "./discoveryFilters";
+import {
+  queryDiscoveryProfiles,
+} from "./influencerRepo";
 import {
   extractBearerToken,
   verifyFirebaseIdToken,
   fetchUserByFirebaseUid,
 } from "../auth/authHelpers";
 import {applyCors} from "../shared/cors";
+import {trackDiscoveryJob} from "./discoveryJobRepo";
 
 interface DiscoveryRequestBody {
   filters: DiscoveryFilterInput[];
@@ -114,6 +119,29 @@ export const discovery = onRequest(
       return;
     }
 
+    const clientLimit = Math.min(parsedBody.recordsLimit ?? MAX_RECORDS_LIMIT, MAX_RECORDS_LIMIT);
+
+    // Step 1: query DB up to clientLimit (same filter semantics as Bright Data)
+    let dbResults: unknown[] = [];
+    try {
+      dbResults = await queryDiscoveryProfiles(parsedBody.filters, clientLimit);
+      logger.info("discovery: DB query returned", {workspaceId, count: dbResults.length});
+    } catch (dbErr) {
+      logger.warn("discovery: DB query failed, will use Brightdata only", dbErr);
+    }
+
+    // Step 2: DB satisfied the full request → return immediately
+    if (dbResults.length >= clientLimit) {
+      trackDiscoveryJob(
+        workspaceId, null,
+        JSON.stringify(parsedBody.filters), clientLimit, dbResults.length
+      );
+      response.status(200).json({data: dbResults});
+      return;
+    }
+
+    // Step 3: DB partial or empty → fetch remaining from Brightdata
+    const remaining = clientLimit - dbResults.length;
     const apiToken = brightDataApiToken.value();
 
     try {
@@ -121,30 +149,53 @@ export const discovery = onRequest(
         datasetId: parsedBody.datasetId ?? brightDataDatasetId.value(),
         filter: datasetFilter,
         apiToken,
-        recordsLimit: parsedBody.recordsLimit,
+        recordsLimit: remaining,
       });
 
-      const data = triggerResult.ready ?
-        triggerResult.data :
-        await pollDatasetSnapshotUntilReady({
-          snapshotId: triggerResult.snapshotId,
-          apiToken,
-          timeoutMs: SNAPSHOT_POLL_TIMEOUT_MS,
-          intervalMs: SNAPSHOT_POLL_INTERVAL_MS,
-        });
+      let bdData: unknown;
+      let job: ReturnType<typeof trackDiscoveryJob> | null = null;
 
-      let dbWrite: {insertedCount: number} | {error: string};
-      try {
-        const insertedCount = await saveScrapedInfluencers(data);
-        dbWrite = {insertedCount};
-      } catch (dbErr) {
-        logger.error("Failed to write discovered profiles to database", dbErr);
-        dbWrite = {
-          error: dbErr instanceof Error ? dbErr.message : "Unknown error",
-        };
+      if (triggerResult.ready) {
+        bdData = triggerResult.data;
+      } else {
+        const snapshotId = triggerResult.snapshotId;
+        job = trackDiscoveryJob(
+          workspaceId, snapshotId,
+          JSON.stringify(parsedBody.filters), remaining, dbResults.length
+        );
+        logger.info("discovery: snapshot pending", {snapshotId, workspaceId});
+
+        try {
+          bdData = await pollDatasetSnapshotUntilReady({
+            snapshotId,
+            apiToken,
+            timeoutMs: SNAPSHOT_POLL_TIMEOUT_MS,
+            intervalMs: SNAPSHOT_POLL_INTERVAL_MS,
+          });
+        } catch (pollErr) {
+          const msg = pollErr instanceof Error ? pollErr.message : "Unknown";
+          job.fail(msg.includes("was not ready after") ? "timeout" : "failed", msg);
+          throw pollErr;
+        }
       }
 
-      response.status(200).json({data, dbWrite});
+      let profilesUpserted = 0;
+      let postsUpserted = 0;
+      const snapshotId = !triggerResult.ready ? triggerResult.snapshotId : null;
+      try {
+        ({profilesUpserted, postsUpserted} =
+          await saveDiscoveryProfiles(bdData, snapshotId));
+      } catch (dbErr) {
+        logger.error("Failed to write discovered profiles to database", dbErr);
+      }
+
+      const bdArray = Array.isArray(bdData) ? bdData : [bdData];
+      if (job) job.complete(bdArray.length, profilesUpserted);
+      response.status(200).json({
+        data: [...dbResults, ...bdArray],
+        profilesUpserted,
+        postsUpserted,
+      });
     } catch (err) {
       logger.error("Discovery filter failed", err);
       const message = err instanceof Error ? err.message : "Unknown error";

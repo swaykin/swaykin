@@ -18,6 +18,7 @@ export interface PostUpsertData {
   estimatedViews?: number | null;
   engagementRatePercent?: number | null;
   estimatedReach?: number | null;
+  location?: string | null;
   postedAt: string;
   source: string;
 }

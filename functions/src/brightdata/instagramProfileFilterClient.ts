@@ -9,13 +9,16 @@ const BASE_URL = "https://api.brightdata.com/datasets";
 
 export interface DatasetFilterCondition {
   name: string;
-  value: string | number | boolean | string[];
   operator: string;
+  value?: string | number | boolean | string[];
 }
+
+/** A filter node is either a leaf condition or a nested and/or group. */
+export type DatasetFilterNode = DatasetFilterCondition | DatasetFilter;
 
 export interface DatasetFilter {
   operator: "and" | "or";
-  filters: DatasetFilterCondition[];
+  filters: DatasetFilterNode[];
 }
 
 export type DatasetFilterTriggerResult =
