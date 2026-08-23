@@ -4,26 +4,22 @@ import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Box } from "@/infra/baseweb/Box";
 import { Icon } from "@/infra/baseweb/Icon";
-import { useGetInfluencers } from "@/modules/discovery/hooks/useGetInfluencers";
 import { useGetCreatorByUsername } from "@/modules/discovery/hooks/useGetCreatorByUsername";
-import { mapCreatorToInfluencer } from "@/modules/discovery/mapCreatorToInfluencer";
+import { mapCreatorLookupToCreator } from "@/modules/discovery/mapCreatorLookupToCreator";
 import { DetailView } from "@/modules/influencer/DetailView";
 
 const Page = () => {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { influencers } = useGetInfluencers();
-  const mockInfluencer = influencers.find((candidate) => candidate.id === id);
   const { getCreator, data, loading } = useGetCreatorByUsername();
 
   useEffect(() => {
-    if (!mockInfluencer) getCreator(id);
-    // Runs once per `id` — re-triggering on `getCreator`/`mockInfluencer` identity would refetch forever.
+    getCreator(id);
+    // Runs once per `id` — re-triggering on `getCreator` identity would refetch forever.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const influencer =
-    mockInfluencer ?? (data ? mapCreatorToInfluencer(data) : null);
+  const creator = data ? mapCreatorLookupToCreator(data) : null;
 
   if (loading) {
     return (
@@ -34,12 +30,12 @@ const Page = () => {
     );
   }
 
-  if (!influencer) return null;
+  if (!creator) return null;
 
   return (
     <Box className="px-7 py-6">
       <DetailView
-        influencer={influencer}
+        influencer={creator}
         onBack={() => router.push("/discovery")}
       />
     </Box>

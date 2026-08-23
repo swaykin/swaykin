@@ -1,43 +1,35 @@
-import type { Influencer, InfluencerHashtag, InfluencerPost } from "@/mocks/discovery";
-import type { CreatorLookupResponse, CreatorPost } from "./types";
+import type { Post } from "@/infra/components/RecentPostsCard";
+import type { Hashtag } from "@/infra/components/TopHashtagsCard";
+import { formatPostDate } from "@/lib/format";
+import type { Creator, CreatorLookupResponse, CreatorPost, CreatorProfile } from "./types";
 
-const POST_TYPE_LABEL: Record<string, InfluencerPost["type"]> = {
+const POST_TYPE_LABEL: Record<string, Post["type"]> = {
   Reel: "Reel",
   Carousel: "Carousel",
   Image: "Post",
 };
 
-const POST_TYPE_ICON: Record<InfluencerPost["type"], string> = {
+const POST_TYPE_ICON: Record<Post["type"], string> = {
   Reel: "ph-play",
   Carousel: "ph-images",
   Post: "ph-image",
 };
 
-const formatRelativeDate = (iso: string) => {
-  const days = Math.max(
-    0,
-    Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000),
-  );
-  if (days === 0) return "Today";
-  if (days < 7) return `${days}d ago`;
-  if (days < 30) return `${Math.floor(days / 7)}w ago`;
-  return `${Math.floor(days / 30)}mo ago`;
-};
-
 const stripHash = (tag: string) => tag.replace(/^#/, "");
 
-const mapPost = (post: CreatorPost): InfluencerPost => {
+const mapPost = (post: CreatorPost): Post => {
   const type = POST_TYPE_LABEL[post.type] ?? "Post";
   return {
     type,
     icon: POST_TYPE_ICON[type],
-    date: formatRelativeDate(post.postedAt),
+    date: formatPostDate(post.postedAt),
     likes: post.likes ?? 0,
     comments: post.comments ?? 0,
     views: post.estimatedViews ?? post.videoPlayCount ?? 0,
     caption: post.caption ?? undefined,
     hashtags: post.hashtags.map(stripHash),
     postUrl: post.postUrl,
+    thumbnailUrl: post.thumbnailUrl ?? undefined,
   };
 };
 
@@ -48,11 +40,13 @@ const pct = (count: number, total: number) =>
   total ? Math.round((count / total) * 100) : 0;
 
 const topHashtags = (
-  profileHashtags: string[],
+  profileHashtags: CreatorProfile["topHashtags"],
   posts: CreatorPost[],
-): InfluencerHashtag[] => {
+): Hashtag[] => {
   if (profileHashtags.length) {
-    return profileHashtags.slice(0, 5).map((tag) => ({ tag: stripHash(tag), uses: 0 }));
+    return profileHashtags
+      .slice(0, 5)
+      .map(({ tag, count }) => ({ tag: stripHash(tag), uses: count }));
   }
   const counts = new Map<string, number>();
   for (const post of posts) {
@@ -69,10 +63,10 @@ const topHashtags = (
 /** Adapts the real /creator API response into the shape DetailView expects — fields BrightData
  * doesn't return (niche, location, tags, themes, followingNum) are left empty/zero rather than
  * guessed, since DetailView renders them conditionally or not at all. */
-export const mapCreatorToInfluencer = ({
+export const mapCreatorLookupToCreator = ({
   profile,
   posts,
-}: CreatorLookupResponse): Influencer => {
+}: CreatorLookupResponse): Creator => {
   const reels = posts.filter((post) => post.type === "Reel").length;
   const carousels = posts.filter((post) => post.type === "Carousel").length;
   const images = posts.length - reels - carousels;

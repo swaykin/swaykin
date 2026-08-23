@@ -7,10 +7,10 @@ import { Icon } from "@/infra/baseweb/Icon";
 import { IconButton } from "@/infra/baseweb/IconButton";
 import { StatTile } from "@/infra/components/StatTile";
 import { Tag } from "@/infra/components/Tag";
-import type { Influencer } from "../../types";
+import type { Creator } from "../../types";
 
-type InfluencerCardProps = {
-  influencer: Influencer;
+type CreatorCardProps = {
+  creator: Creator;
   selected: boolean;
   onToggleSelect: () => void;
   saved: boolean;
@@ -18,8 +18,8 @@ type InfluencerCardProps = {
   onOpen: () => void;
 };
 
-type InfluencerCardHeaderProps = {
-  influencer: Influencer;
+type CreatorCardHeaderProps = {
+  creator: Creator;
   selected: boolean;
   onToggleSelect: () => void;
   saved: boolean;
@@ -27,14 +27,14 @@ type InfluencerCardHeaderProps = {
   onOpen: () => void;
 };
 
-const InfluencerCardHeader = ({
-  influencer,
+const CreatorCardHeader = ({
+  creator,
   selected,
   onToggleSelect,
   saved,
   onToggleShortlist,
   onOpen,
-}: InfluencerCardHeaderProps) => (
+}: CreatorCardHeaderProps) => (
   <Box className="flex items-start gap-2.5">
     <Checkbox
       icon
@@ -46,13 +46,13 @@ const InfluencerCardHeader = ({
       className="flex min-w-0 flex-1 cursor-pointer items-start gap-2.5"
       onClick={onOpen}
     >
-      <Avatar name={influencer.name} size="44px" fontSize="14px" />
+      <Avatar name={creator.name} size="44px" fontSize="14px" />
       <Box className="min-w-0 flex-1">
         <Box className="flex items-center gap-1.5">
           <Box as="span" className="truncate text-[13.5px] font-bold text-text">
-            {influencer.name}
+            {creator.name}
           </Box>
-          {influencer.verified && (
+          {creator.verified && (
             <Icon
               name="ph-seal-check"
               weight="fill"
@@ -62,8 +62,8 @@ const InfluencerCardHeader = ({
           )}
         </Box>
         <Box className="truncate text-[11.5px] text-text-tertiary">
-          @{influencer.handle}
-          {influencer.location ? ` · ${influencer.location}` : ""}
+          @{creator.handle}
+          {creator.location ? ` · ${creator.location}` : ""}
         </Box>
       </Box>
     </Box>
@@ -86,15 +86,12 @@ const InfluencerCardHeader = ({
   </Box>
 );
 
-type InfluencerCardFooterProps = {
+type CreatorCardFooterProps = {
   handle: string;
   onOpen: () => void;
 };
 
-const InfluencerCardFooter = ({
-  handle,
-  onOpen,
-}: InfluencerCardFooterProps) => (
+const CreatorCardFooter = ({ handle, onOpen }: CreatorCardFooterProps) => (
   <Box className="flex gap-2">
     <a
       href={`https://instagram.com/${handle}`}
@@ -119,14 +116,14 @@ const InfluencerCardFooter = ({
   </Box>
 );
 
-export const InfluencerCard = ({
-  influencer,
+export const CreatorCard = ({
+  creator,
   selected,
   onToggleSelect,
   saved,
   onToggleShortlist,
   onOpen,
-}: InfluencerCardProps) => (
+}: CreatorCardProps) => (
   <Box
     className="flex flex-col gap-3 rounded-2xl bg-surface p-4"
     style={{
@@ -134,8 +131,8 @@ export const InfluencerCard = ({
       boxShadow: selected ? "var(--sk-shadow-raised)" : "var(--sk-shadow-card)",
     }}
   >
-    <InfluencerCardHeader
-      influencer={influencer}
+    <CreatorCardHeader
+      creator={creator}
       selected={selected}
       onToggleSelect={onToggleSelect}
       saved={saved}
@@ -144,11 +141,11 @@ export const InfluencerCard = ({
     />
 
     <Box className="flex flex-wrap gap-1.5">
-      <Tag label={influencer.niche} />
-      {!!influencer.collabs?.length && (
+      <Tag label={creator.niche} />
+      {!!creator.collabs?.length && (
         <Tag label="Recent collabs" icon="ph-handshake" tone="accent" />
       )}
-      {influencer.email && (
+      {creator.email && (
         <Tag label="Email available" icon="ph-envelope-simple" tone="teal" />
       )}
     </Box>
@@ -156,22 +153,22 @@ export const InfluencerCard = ({
     <Box className="grid grid-cols-2 gap-2">
       <StatTile
         label="Followers"
-        value={formatCompactNumber(influencer.followersNum)}
+        value={formatCompactNumber(creator.followersNum)}
       />
       <StatTile
         label="Engagement"
-        value={`${influencer.erNum.toFixed(1)}%`}
+        value={`${creator.erNum.toFixed(1)}%`}
         valueColor="var(--green-700)"
       />
       <StatTile
         label="Avg. likes"
-        value={formatCompactNumber(influencer.avgLikesNum)}
+        value={formatCompactNumber(creator.avgLikesNum)}
       />
       <StatTile
         label="Avg. comments"
-        value={formatCompactNumber(influencer.avgCommentsNum)}
+        value={formatCompactNumber(creator.avgCommentsNum)}
       />
     </Box>
-    <InfluencerCardFooter handle={influencer.handle} onOpen={onOpen} />
+    <CreatorCardFooter handle={creator.handle} onOpen={onOpen} />
   </Box>
 );

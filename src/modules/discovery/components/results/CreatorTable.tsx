@@ -5,10 +5,10 @@ import { Button } from "@/infra/baseweb/Button";
 import { Checkbox } from "@/infra/baseweb/Checkbox";
 import { Icon } from "@/infra/baseweb/Icon";
 import { StickyColumnDivider } from "@/infra/components/StickyColumnDivider";
-import type { Influencer } from "../../types";
+import type { Creator } from "../../types";
 
-type InfluencerTableProps = {
-  influencers: Influencer[];
+type CreatorTableProps = {
+  creators: Creator[];
   selected: Record<string, boolean>;
   onToggleSelect: (id: string) => void;
   onOpen: (id: string) => void;
@@ -18,13 +18,13 @@ const HEADER_CELL =
   "border-b border-border bg-sunken px-3 py-2.5 text-[10.5px] font-bold uppercase tracking-wide text-text-tertiary";
 const BODY_CELL = "border-b border-border px-3 py-2.5";
 
-const InfluencerRow = ({
-  influencer,
+const CreatorRow = ({
+  creator,
   selected,
   onToggleSelect,
   onOpen,
 }: {
-  influencer: Influencer;
+  creator: Creator;
   selected: boolean;
   onToggleSelect: () => void;
   onOpen: () => void;
@@ -40,13 +40,13 @@ const InfluencerRow = ({
       onClick={onOpen}
     >
       <Box className="flex items-center gap-2">
-        <Avatar name={influencer.name} size="28px" fontSize="11px" />
+        <Avatar name={creator.name} size="28px" fontSize="11px" />
         <Box className="min-w-0">
           <Box className="flex items-center gap-1 text-[12.5px] font-semibold text-text">
             <Box as="span" className="truncate">
-              {influencer.name}
+              {creator.name}
             </Box>
-            {influencer.verified && (
+            {creator.verified && (
               <Icon
                 name="ph-seal-check"
                 weight="fill"
@@ -56,32 +56,32 @@ const InfluencerRow = ({
             )}
           </Box>
           <Box className="truncate text-[11.5px] text-text-tertiary">
-            @{influencer.handle}
+            @{creator.handle}
           </Box>
         </Box>
       </Box>
       <StickyColumnDivider />
     </td>
     <td className={`${BODY_CELL} pl-10 text-[12.5px] text-text-secondary`}>
-      {influencer.niche}
+      {creator.niche}
     </td>
     <td className={`${BODY_CELL} text-right text-[12.5px] text-text`}>
-      {formatCompactNumber(influencer.followersNum)}
+      {formatCompactNumber(creator.followersNum)}
     </td>
     <td
       className={`${BODY_CELL} text-right text-[12.5px] font-bold`}
       style={{ color: "var(--green-700)" }}
     >
-      {influencer.erNum.toFixed(1)}%
+      {creator.erNum.toFixed(1)}%
     </td>
     <td className={`${BODY_CELL} text-right text-[12.5px] text-text`}>
-      {formatCompactNumber(influencer.avgLikesNum)}
+      {formatCompactNumber(creator.avgLikesNum)}
     </td>
     <td className={`${BODY_CELL} text-right text-[12.5px] text-text`}>
-      {formatCompactNumber(influencer.avgCommentsNum)}
+      {formatCompactNumber(creator.avgCommentsNum)}
     </td>
     <td className={`${BODY_CELL} text-center`}>
-      {!!influencer.collabs?.length && (
+      {!!creator.collabs?.length && (
         <Icon
           name="ph-handshake"
           weight="fill"
@@ -91,7 +91,7 @@ const InfluencerRow = ({
       )}
     </td>
     <td className={`${BODY_CELL} text-center`}>
-      {influencer.email && (
+      {creator.email && (
         <Icon
           name="ph-envelope-simple"
           weight="fill"
@@ -125,12 +125,12 @@ const InfluencerRow = ({
   </tr>
 );
 
-export const InfluencerTable = ({
-  influencers,
+export const CreatorTable = ({
+  creators,
   selected,
   onToggleSelect,
   onOpen,
-}: InfluencerTableProps) => (
+}: CreatorTableProps) => (
   <Box className="overflow-hidden overflow-x-auto rounded-2xl border border-border bg-surface">
     {/* Auto layout (not `table-fixed`) with a width *hint* on every column — `table-fixed`
         treats one unhinted column as the sole outlet for leftover width when the table is
@@ -163,13 +163,13 @@ export const InfluencerTable = ({
         </tr>
       </thead>
       <tbody>
-        {influencers.map((influencer) => (
-          <InfluencerRow
-            key={influencer.id}
-            influencer={influencer}
-            selected={!!selected[influencer.id]}
-            onToggleSelect={() => onToggleSelect(influencer.id)}
-            onOpen={() => onOpen(influencer.id)}
+        {creators.map((creator) => (
+          <CreatorRow
+            key={creator.id}
+            creator={creator}
+            selected={!!selected[creator.id]}
+            onToggleSelect={() => onToggleSelect(creator.id)}
+            onOpen={() => onOpen(creator.handle)}
           />
         ))}
       </tbody>

@@ -1,62 +1,10 @@
-import type { Post } from "@/infra/components/RecentPostsCard";
-import type { Hashtag } from "@/infra/components/TopHashtagsCard";
-import type { SavedStatus } from "@/modules/saved/constants";
+import type { Creator } from "@/modules/discovery/types";
 
-export type InfluencerPost = Post;
-export type InfluencerHashtag = Hashtag;
+/** Discovery owns the Creator type now — these re-export it under its old name so the
+ * Saved and Influencer-detail modules (not yet moved off mock data) don't need touching. */
+export type { Creator as Influencer, BrandCollaboration } from "@/modules/discovery/types";
 
-export type BrandCollaboration = {
-  brand: string;
-  date: string;
-  via: string;
-  reach: number;
-  emv: number;
-  likes: number;
-  comments: number;
-  logoColor: string;
-};
-
-export type Influencer = {
-  id: string;
-  name: string;
-  handle: string;
-  niche: string;
-  location?: string;
-  verified: boolean;
-  followersNum: number;
-  followingNum: number;
-  erNum: number;
-  avgLikesNum: number;
-  avgCommentsNum: number;
-  postsWeekNum: number;
-  totalPostsNum: number;
-  pctReels: number;
-  pctStatic: number;
-  pctCarousel: number;
-  tags: string[];
-  bio: string;
-  /** Content themes inferred from captions/hashtags, and top hashtags ranked by usage —
-   * shown unconditionally in the Detail View, unlike the optional contact/collab fields below. */
-  themes: string[];
-  hashtags: InfluencerHashtag[];
-  posts: InfluencerPost[];
-  /** Literal values on a couple of mocks only — presence of the field is the signal, no
-   * separate hasEmail/hasPhone/hasAddress/hasCollabs booleans to keep in sync. Address
-   * reuses `location`. */
-  email?: string;
-  phone?: string;
-  collabs?: BrandCollaboration[];
-  /** Saved Influencers page fields — literal values only on mocks pre-seeded as saved;
-   * presence of `savedDaysAgo` is the "is saved" signal, no separate isSaved boolean. */
-  lists?: string[];
-  status?: SavedStatus;
-  savedDaysAgo?: number;
-  newPostsCount?: number;
-  followerChangePct?: number;
-  erChangePts?: number;
-};
-
-export const mockInfluencers: Influencer[] = [
+export const mockInfluencers: Creator[] = [
   {
     id: "ananya",
     name: "Ananya Kapoor",

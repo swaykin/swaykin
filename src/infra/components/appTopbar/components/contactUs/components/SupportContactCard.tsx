@@ -6,7 +6,7 @@ import { IconButton } from "@/infra/baseweb/IconButton";
 const SUPPORT = {
   name: "Sahil Jain",
   role: "Co-founder and CEO",
-  email: "support@swaykin.com",
+  email: "admin@swaykin.com",
 };
 
 export const SupportContactCard = () => {

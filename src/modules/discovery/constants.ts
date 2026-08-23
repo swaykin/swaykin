@@ -1,9 +1,9 @@
 import { formatCompactNumber } from "@/lib/format";
-import type { Influencer } from "./types";
+import type { Creator } from "./types";
 
 export type CompareMetric = {
   label: string;
-  key: keyof Influencer;
+  key: keyof Creator;
   format: (value: number) => string;
 };
 

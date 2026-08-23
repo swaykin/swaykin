@@ -3,6 +3,8 @@ import { useQuery } from "@/lib/api/useQuery";
 export type DeepdivePost = {
   postUrl: string;
   type: string;
+  thumbnailUrl: string | null;
+  caption: string | null;
   likes: number | null;
   comments: number | null;
   estimatedViews: number | null;
@@ -20,7 +22,8 @@ export type DeepdiveCompetitor = {
   verified: boolean | null;
   avgEngagementRate: number | null;
   postingFrequencyPerWeek: number;
-  topHashtags: string[];
+  /** `tag` includes the leading "#". */
+  topHashtags: { tag: string; count: number }[];
   collaborators: { handle: string; postCount: number }[];
   recentPosts: DeepdivePost[];
 };

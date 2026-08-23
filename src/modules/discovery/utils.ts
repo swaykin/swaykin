@@ -1,8 +1,8 @@
 import type { CompareTableRow } from "@/infra/components/CompareTable";
 import { COMPARE_METRICS } from "./constants";
-import type { DiscoveryFilters, Influencer } from "./types";
+import type { Creator, DiscoveryFilters } from "./types";
 
-export const buildCompareRows = (cols: Influencer[]): CompareTableRow[] =>
+export const buildCompareRows = (cols: Creator[]): CompareTableRow[] =>
   COMPARE_METRICS.map((metric) => {
     const values = cols.map((col) => col[metric.key] as number);
     const best = Math.max(...values);
@@ -21,11 +21,11 @@ const inRange = (value: number, minStr: string, maxStr: string): boolean => {
   return true;
 };
 
-export const filterInfluencers = (
-  influencers: Influencer[],
+export const filterCreators = (
+  creators: Creator[],
   filters: DiscoveryFilters,
-): Influencer[] =>
-  influencers.filter((inf) => {
+): Creator[] =>
+  creators.filter((inf) => {
     if (filters.categories.length && !filters.categories.includes(inf.niche)) {
       return false;
     }

@@ -1,13 +1,10 @@
 import type { Collaboration } from "@/mocks/competitors";
-import { formatCompactNumber } from "@/lib/format";
+import { formatCompactNumber, formatPostDate } from "@/lib/format";
 import type { DeepdiveCompetitor, DeepdivePost } from "./hooks/useCompetitorDeepdive";
 import type { CompareBrand, CompareCompetitor } from "./hooks/useCompetitorCompare";
 import type { ColoredBrandMetrics, ColoredCompetitor } from "./types";
 
 const NO_DATA = "—";
-
-const formatShortDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
 const postTypeMeta = (type: string) => {
   if (type === "Reel") return { type: "Reel", icon: "ph-play" };
@@ -17,12 +14,14 @@ const postTypeMeta = (type: string) => {
 
 const mapPost = (post: DeepdivePost) => ({
   ...postTypeMeta(post.type),
-  date: formatShortDate(post.postedAt),
+  date: formatPostDate(post.postedAt),
   likes: post.likes ?? 0,
   comments: post.comments ?? 0,
   views: post.estimatedViews ?? 0,
   hashtags: post.hashtags.map((tag) => tag.replace(/^#/, "")),
   postUrl: post.postUrl,
+  thumbnailUrl: post.thumbnailUrl ?? undefined,
+  caption: post.caption ?? undefined,
 });
 
 const computeContentBreakdown = (posts: DeepdivePost[]) => {
@@ -80,7 +79,10 @@ export const mapDeepdiveToColoredCompetitor = (
     pctStatic,
     posts: data.recentPosts.map(mapPost),
     collabs,
-    hashtags: data.topHashtags.map((tag) => ({ tag: tag.replace(/^#/, ""), uses: 0 })),
+    hashtags: data.topHashtags.map(({ tag, count }) => ({
+      tag: tag.replace(/^#/, ""),
+      uses: count,
+    })),
     hashtagNote: "",
     color,
     tint,

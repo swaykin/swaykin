@@ -25,6 +25,9 @@ export type Post = {
    * Instagram post via iframe instead of the colored placeholder, since scraped thumbnail/media
    * URLs are signed and expire, but Instagram's own embed always serves current content. */
   postUrl?: string;
+  /** Signed CDN URL, real posts only — expires eventually (no backend caching yet), so the tile
+   * falls back to the colored placeholder on load failure rather than showing a broken image. */
+  thumbnailUrl?: string;
 };
 
 type RecentPostsCardProps = {
@@ -44,75 +47,96 @@ const PostTile = ({
   post: Post;
   bgColor: string;
   onClick: () => void;
-}) => (
-  <Box
-    className="w-[356px] flex-none cursor-pointer overflow-hidden rounded-[14px] border-2 border-transparent"
-    onClick={onClick}
-  >
-    <Box className="relative flex items-center justify-center">
-      {post.postUrl ? (
-        // Cross-origin embed — we can't target its internal header/footer directly, so this
-        // crops by fixed pixel guesses (push the iframe up past its header, cap the visible
-        // window before its footer). Approximate, will drift for different post shapes.
-        <Box className="w-full overflow-hidden" style={{ height: 380 }}>
-          <iframe
-            src={new URL("embed", post.postUrl).toString()}
-            title="Instagram post"
+}) => {
+  const [thumbnailFailed, setThumbnailFailed] = useState(false);
+  const showThumbnail = post.thumbnailUrl && !thumbnailFailed;
+
+  return (
+    <Box
+      className="w-[356px] flex-none cursor-pointer overflow-hidden rounded-[14px] border border-border shadow-card"
+      onClick={onClick}
+    >
+      <Box className="relative flex aspect-[4/3] items-center justify-center">
+        {showThumbnail ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={post.thumbnailUrl}
+            alt=""
             loading="lazy"
-            className="block w-full border-0"
-            style={{ height: 700, marginTop: -60 }}
+            onError={() => setThumbnailFailed(true)}
+            className="h-full w-full object-cover"
           />
-        </Box>
-      ) : (
-        <Box
-          className="flex aspect-[4/3] w-full items-center justify-center"
-          style={{ background: bgColor }}
-        >
-          <Box className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-black/[0.28]">
-            <Icon name={post.icon} weight="fill" size={24} color="#fff" />
+        ) : (
+          <Box
+            className="flex h-full w-full items-center justify-center"
+            style={{ background: bgColor }}
+          >
+            <Box className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-black/[0.28]">
+              <Icon name={post.icon} weight="fill" size={24} color="#fff" />
+            </Box>
           </Box>
-        </Box>
-      )}
-      <Box
-        as="span"
-        className="absolute left-[9px] top-[9px] rounded-md bg-black/40 px-[7px] py-[3px] text-[10px] font-bold uppercase text-white"
-      >
-        {post.type}
-      </Box>
-      {post.isCollab && (
+        )}
         <Box
           as="span"
-          className="absolute right-[9px] top-[9px] rounded-md px-[7px] py-[3px] text-[9.5px] font-bold text-white"
-          style={{ background: "var(--green-700)" }}
+          className="absolute left-[9px] top-[9px] rounded-md bg-black/40 px-[7px] py-[3px] text-[10px] font-bold uppercase text-white"
         >
-          Paid Partnership
+          {post.type}
         </Box>
-      )}
-    </Box>
-    <Box className="bg-surface px-3 pt-3">
-      <Box className="mb-1.5 flex items-center gap-3.5">
-        <Box className="flex items-center gap-1 text-[12.5px] font-semibold text-text-secondary">
-          <Icon
-            name="ph-heart"
-            weight="fill"
-            size={13}
-            color="var(--pink-600)"
-          />
-          {formatCompactNumber(post.likes)}
-        </Box>
-        <Box className="flex items-center gap-1 text-[12.5px] font-semibold text-text-secondary">
-          <Icon name="ph-chat-circle" size={13} />
-          {formatCompactNumber(post.comments)}
-        </Box>
-        <Box className="flex items-center gap-1 text-[12.5px] font-semibold text-text-secondary">
-          <Icon name="ph-eye" size={13} />
-          {formatCompactNumber(post.views)}
-        </Box>
+        {post.isCollab && (
+          <Box
+            as="span"
+            className="absolute right-[9px] top-[9px] rounded-md px-[7px] py-[3px] text-[9.5px] font-bold text-white"
+            style={{ background: "var(--green-700)" }}
+          >
+            Paid Partnership
+          </Box>
+        )}
       </Box>
-      <Box className="text-[11.5px] text-text-tertiary">{post.date}</Box>
+      <Box className="bg-surface px-3 pb-3 pt-3">
+        <Box className="mb-1.5 flex items-center gap-3.5">
+          <Box className="flex items-center gap-1 text-[12.5px] font-semibold text-text-secondary">
+            <Icon
+              name="ph-heart"
+              weight="fill"
+              size={13}
+              color="var(--pink-600)"
+            />
+            {formatCompactNumber(post.likes)}
+          </Box>
+          <Box className="flex items-center gap-1 text-[12.5px] font-semibold text-text-secondary">
+            <Icon name="ph-chat-circle" size={13} />
+            {formatCompactNumber(post.comments)}
+          </Box>
+          <Box className="flex items-center gap-1 text-[12.5px] font-semibold text-text-secondary">
+            <Icon name="ph-eye" size={13} />
+            {formatCompactNumber(post.views)}
+          </Box>
+          <Box as="span" className="ml-auto text-[11.5px] text-text-tertiary">
+            {post.date}
+          </Box>
+        </Box>
+        {post.caption && (
+          <Box className="mt-2 line-clamp-2 text-[12px] leading-[1.45] text-text-secondary">
+            {post.caption}
+          </Box>
+        )}
+        {!!post.hashtags?.length && (
+          <Box className="mt-2 flex flex-wrap gap-1.5">
+            {post.hashtags.slice(0, 4).map((tag) => (
+              <Box
+                key={tag}
+                as="span"
+                className="rounded-md bg-accent-subtle px-2 py-[3px] text-[10.5px] font-semibold text-link"
+              >
+                #{tag}
+              </Box>
+            ))}
+          </Box>
+        )}
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};
 
 const MODAL_OVERRIDES = {
   Dialog: {

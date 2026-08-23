@@ -8,19 +8,19 @@ import {
   type CompareTableColumn,
 } from "@/infra/components/CompareTable";
 import { buildCompareRows } from "../../utils";
-import type { Influencer } from "../../types";
+import type { Creator } from "../../types";
 
 type CompareModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  influencers: Influencer[];
+  creators: Creator[];
 };
 
-const CompareColumnHeader = ({ influencer }: { influencer: Influencer }) => (
+const CompareColumnHeader = ({ creator }: { creator: Creator }) => (
   <Box className="flex flex-col items-center gap-1">
-    <Avatar name={influencer.name} size="26px" fontSize="9.5px" />
+    <Avatar name={creator.name} size="26px" fontSize="9.5px" />
     <Box className="whitespace-nowrap text-[11.5px] font-bold text-text">
-      {influencer.name}
+      {creator.name}
     </Box>
   </Box>
 );
@@ -43,13 +43,13 @@ const MODAL_OVERRIDES = {
 export const CompareModal = ({
   isOpen,
   onClose,
-  influencers,
+  creators,
 }: CompareModalProps) => {
-  const columns: CompareTableColumn[] = influencers.map((influencer) => ({
-    key: influencer.id,
-    header: <CompareColumnHeader influencer={influencer} />,
+  const columns: CompareTableColumn[] = creators.map((creator) => ({
+    key: creator.id,
+    header: <CompareColumnHeader creator={creator} />,
   }));
-  const rows = buildCompareRows(influencers);
+  const rows = buildCompareRows(creators);
 
   return (
     <Modal
