@@ -8,6 +8,7 @@ import type { Influencer } from "../types";
 
 type HeaderCardProps = {
   influencer: Influencer;
+  avatarColor: string;
 };
 
 type ContactRowProps = {
@@ -33,13 +34,18 @@ const ContactRow = ({ icon, iconColor, value }: ContactRowProps) => (
   </Box>
 );
 
-export const HeaderCard = ({ influencer }: HeaderCardProps) => {
+export const HeaderCard = ({ influencer, avatarColor }: HeaderCardProps) => {
   const hasContact =
     influencer.email || influencer.phone || influencer.location;
 
   return (
     <Box className="flex items-start gap-4 rounded-2xl border border-border bg-surface p-5 shadow-card">
-      <Avatar name={influencer.name} size="56px" fontSize="18px" />
+      <Avatar
+        name={influencer.name}
+        size="56px"
+        fontSize="18px"
+        fillColor={avatarColor}
+      />
       <Box className="min-w-0 flex-1">
         <Box className="flex flex-wrap items-center gap-1.5">
           <Box as="span" className="text-base font-bold text-text">

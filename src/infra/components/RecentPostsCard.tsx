@@ -21,6 +21,10 @@ export type Post = {
    * Competitors' posts simply omit the caption paragraph/hashtag pills. */
   caption?: string;
   hashtags?: string[];
+  /** Real posts only (mock data has none) — when present, the detail modal embeds the live
+   * Instagram post via iframe instead of the colored placeholder, since scraped thumbnail/media
+   * URLs are signed and expire, but Instagram's own embed always serves current content. */
+  postUrl?: string;
 };
 
 type RecentPostsCardProps = {
@@ -45,13 +49,30 @@ const PostTile = ({
     className="w-[356px] flex-none cursor-pointer overflow-hidden rounded-[14px] border-2 border-transparent"
     onClick={onClick}
   >
-    <Box
-      className="relative flex aspect-[4/3] items-center justify-center"
-      style={{ background: bgColor }}
-    >
-      <Box className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-black/[0.28]">
-        <Icon name={post.icon} weight="fill" size={24} color="#fff" />
-      </Box>
+    <Box className="relative flex items-center justify-center">
+      {post.postUrl ? (
+        // Cross-origin embed — we can't target its internal header/footer directly, so this
+        // crops by fixed pixel guesses (push the iframe up past its header, cap the visible
+        // window before its footer). Approximate, will drift for different post shapes.
+        <Box className="w-full overflow-hidden" style={{ height: 380 }}>
+          <iframe
+            src={new URL("embed", post.postUrl).toString()}
+            title="Instagram post"
+            loading="lazy"
+            className="block w-full border-0"
+            style={{ height: 700, marginTop: -60 }}
+          />
+        </Box>
+      ) : (
+        <Box
+          className="flex aspect-[4/3] w-full items-center justify-center"
+          style={{ background: bgColor }}
+        >
+          <Box className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-black/[0.28]">
+            <Icon name={post.icon} weight="fill" size={24} color="#fff" />
+          </Box>
+        </Box>
+      )}
       <Box
         as="span"
         className="absolute left-[9px] top-[9px] rounded-md bg-black/40 px-[7px] py-[3px] text-[10px] font-bold uppercase text-white"
@@ -125,13 +146,26 @@ const PostDetailModal = ({
   >
     {post && (
       <>
-        <Box
-          className="relative flex aspect-[4/3] items-center justify-center rounded-t-2xl"
-          style={{ background: bgColor }}
-        >
-          <Box className="flex h-16 w-16 items-center justify-center rounded-full bg-black/[0.28]">
-            <Icon name={post.icon} weight="fill" size={30} color="#fff" />
-          </Box>
+        <Box className="relative rounded-t-2xl">
+          {post.postUrl ? (
+            <iframe
+              key={post.postUrl}
+              src={new URL("embed", post.postUrl).toString()}
+              title="Instagram post"
+              loading="lazy"
+              className="block w-full rounded-t-2xl border-0"
+              height={620}
+            />
+          ) : (
+            <Box
+              className="flex aspect-[4/3] items-center justify-center rounded-t-2xl"
+              style={{ background: bgColor }}
+            >
+              <Box className="flex h-16 w-16 items-center justify-center rounded-full bg-black/[0.28]">
+                <Icon name={post.icon} weight="fill" size={30} color="#fff" />
+              </Box>
+            </Box>
+          )}
           <IconButton
             kind="tertiary"
             type="button"
