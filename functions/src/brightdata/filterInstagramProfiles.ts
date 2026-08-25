@@ -8,6 +8,10 @@ import {
 } from "./instagramProfileFilterClient";
 import {saveScrapedInfluencers} from "./saveInfluencers";
 import {
+  isUpstreamTimeout,
+  UPSTREAM_FAILURE_MESSAGE,
+} from "../shared/clientErrors";
+import {
   SNAPSHOT_POLL_TIMEOUT_MS,
   SNAPSHOT_POLL_INTERVAL_MS,
 } from "./constants";
@@ -127,9 +131,9 @@ export const filterInstagramProfiles = onRequest(
       response.status(200).json({data, dbWrite});
     } catch (err) {
       logger.error("Bright Data dataset filter failed", err);
-      const message = err instanceof Error ? err.message : "Unknown error";
-      const isTimeout = message.includes("was not ready after");
-      response.status(isTimeout ? 504 : 502).json({error: message});
+      response.status(isUpstreamTimeout(err) ? 504 : 502).json({
+        error: UPSTREAM_FAILURE_MESSAGE,
+      });
     }
   }
 );

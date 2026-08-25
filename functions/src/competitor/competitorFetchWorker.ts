@@ -9,6 +9,7 @@ import {
   SNAPSHOT_POLL_TIMEOUT_MS,
   SNAPSHOT_POLL_INTERVAL_MS,
 } from "../brightdata/constants";
+import {UPSTREAM_FAILURE_MESSAGE} from "../shared/clientErrors";
 import {brightDataDatasetId} from "../config";
 import {refreshProfileStats} from "./profileRepo";
 import {upsertPosts} from "./postRepo";
@@ -88,7 +89,7 @@ export async function fetchAndPersistCompetitor({
   );
 
   if (!rawProfile) {
-    throw new Error("Bright Data profile scrape returned no usable data");
+    throw new Error(UPSTREAM_FAILURE_MESSAGE);
   }
 
   let profileData = mapBrightDataProfileRecord(
@@ -98,9 +99,7 @@ export async function fetchAndPersistCompetitor({
   );
 
   if (profileData.followers === null && profileData.postsCount === null) {
-    throw new Error(
-      "Something went wrong, upstream service is currently not providing data"
-    );
+    throw new Error(UPSTREAM_FAILURE_MESSAGE);
   }
 
   await refreshProfileStats(profileId, profileData);

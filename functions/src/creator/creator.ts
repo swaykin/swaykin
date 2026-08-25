@@ -2,6 +2,7 @@ import {onRequest} from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
 import type {Request, Response} from "express";
 import {applyCors} from "../shared/cors";
+import {UPSTREAM_FAILURE_MESSAGE} from "../shared/clientErrors";
 import {
   extractBearerToken,
   verifyFirebaseIdToken,
@@ -156,11 +157,7 @@ export const creator = onRequest(
       });
     } catch (err) {
       logger.error("creator: failed", {igHandle, err});
-      response
-        .status(502)
-        .json({
-          error: err instanceof Error ? err.message : "Failed to fetch creator data",
-        });
+      response.status(502).json({error: UPSTREAM_FAILURE_MESSAGE});
     }
   }
 );

@@ -6,6 +6,10 @@ import {triggerScrape, pollSnapshotUntilReady} from "./brightDataClient";
 import {connectorConfig} from "./dataConnectConfig";
 import {pickField, asNumber} from "./pickField";
 import {
+  isUpstreamTimeout,
+  UPSTREAM_FAILURE_MESSAGE,
+} from "../shared/clientErrors";
+import {
   SNAPSHOT_POLL_TIMEOUT_MS,
   SNAPSHOT_POLL_INTERVAL_MS,
 } from "./constants";
@@ -135,9 +139,7 @@ export const refreshWorkspaceInstagramStats = onRequest(
       );
 
       if (!profile) {
-        response
-          .status(502)
-          .json({error: "Bright Data returned no usable profile", data});
+        response.status(502).json({error: UPSTREAM_FAILURE_MESSAGE});
         return;
       }
 
@@ -167,9 +169,9 @@ export const refreshWorkspaceInstagramStats = onRequest(
         .json({igFollowers, igPostsCount, igAvgEngagementRate});
     } catch (err) {
       logger.error("Failed to refresh workspace Instagram stats", err);
-      const message = err instanceof Error ? err.message : "Unknown error";
-      const isTimeout = message.includes("was not ready after");
-      response.status(isTimeout ? 504 : 502).json({error: message});
+      response.status(isUpstreamTimeout(err) ? 504 : 502).json({
+        error: UPSTREAM_FAILURE_MESSAGE,
+      });
     }
   }
 );

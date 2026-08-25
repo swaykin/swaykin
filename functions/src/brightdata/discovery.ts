@@ -21,6 +21,10 @@ import {
   fetchUserByFirebaseUid,
 } from "../auth/authHelpers";
 import {applyCors} from "../shared/cors";
+import {
+  isUpstreamTimeout,
+  UPSTREAM_FAILURE_MESSAGE,
+} from "../shared/clientErrors";
 import {trackDiscoveryJob} from "./discoveryJobRepo";
 
 interface DiscoveryRequestBody {
@@ -198,9 +202,9 @@ export const discovery = onRequest(
       });
     } catch (err) {
       logger.error("Discovery filter failed", err);
-      const message = err instanceof Error ? err.message : "Unknown error";
-      const isTimeout = message.includes("was not ready after");
-      response.status(isTimeout ? 504 : 502).json({error: message});
+      response.status(isUpstreamTimeout(err) ? 504 : 502).json({
+        error: UPSTREAM_FAILURE_MESSAGE,
+      });
     }
   }
 );

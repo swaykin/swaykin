@@ -7,8 +7,11 @@ import {
   fetchUserByFirebaseUid,
 } from "../auth/authHelpers";
 import {getWorkspaceCompetitorMap} from "./workspaceCompetitors";
+import {getDataConnect} from "firebase-admin/data-connect";
+import {connectorConfig} from "../brightdata/dataConnectConfig";
 import {findProfilesByIds} from "./profileRepo";
 import {findPostsByProfileId} from "./postRepo";
+import {loadOwnBrandForWorkspace} from "./ownBrand";
 import {
   getActiveCompetitorProfileIds,
   resolveCompetitorProfileIds,
@@ -20,6 +23,28 @@ import {
 } from "./metricsUtils";
 
 const RECENT_POSTS_LIMIT = 20;
+
+interface WorkspaceBrand {
+  brandName: string | null;
+  instagramHandle: string | null;
+}
+
+async function fetchWorkspaceBrand(workspaceId: string): Promise<WorkspaceBrand | null> {
+  const dc = getDataConnect(connectorConfig);
+  const res = await dc.executeGraphqlRead<
+    { workspace: WorkspaceBrand | null },
+    { id: string }
+  >(
+    `query($id: UUID!) {
+      workspace(id: $id) {
+        brandName
+        instagramHandle
+      }
+    }`,
+    {variables: {id: workspaceId}}
+  );
+  return res.data.workspace ?? null;
+}
 
 /**
  * @param {number | null} value Value to round, or null.
@@ -79,7 +104,10 @@ export const competitorDeepdive = onRequest(
     }
 
     try {
-      const competitorMap = await getWorkspaceCompetitorMap(user.workspaceId);
+      const [competitorMap, workspaceBrand] = await Promise.all([
+        getWorkspaceCompetitorMap(user.workspaceId),
+        fetchWorkspaceBrand(user.workspaceId),
+      ]);
 
       const rawIds = request.query.profileIds as string | undefined;
       const validIds = rawIds ?
@@ -134,7 +162,43 @@ export const competitorDeepdive = onRequest(
         })
       );
 
-      response.status(200).json({competitors});
+      const ownBrandData = await loadOwnBrandForWorkspace(
+        workspaceBrand?.instagramHandle ?? null,
+        RECENT_POSTS_LIMIT,
+        validIds
+      );
+
+      const myBrand = ownBrandData ?
+        {
+          profileId: ownBrandData.profile.id,
+          igUsername: ownBrandData.profile.igHandle,
+          name:
+            workspaceBrand?.brandName ??
+            ownBrandData.profile.name ??
+            ownBrandData.profile.igHandle,
+          bio: ownBrandData.profile.bio,
+          followers: ownBrandData.profile.followers,
+          verified: ownBrandData.profile.verified,
+          avgEngagementRate: roundTo(ownBrandData.profile.avgEngagementRate, 2),
+          postingFrequencyPerWeek: computePostingFrequency(ownBrandData.posts),
+          topHashtags: computeTopHashtags(ownBrandData.posts),
+          collaborators: computeCollaborators(ownBrandData.posts),
+          recentPosts: ownBrandData.posts.map((post) => ({
+            postUrl: post.postUrl,
+            type: post.type,
+            thumbnailUrl: post.thumbnailUrl,
+            caption: post.caption,
+            likes: post.likes,
+            comments: post.comments,
+            estimatedViews: post.estimatedViews,
+            engagementRatePercent: roundTo(post.engagementRatePercent, 2),
+            hashtags: post.hashtags,
+            postedAt: post.postedAt,
+          })),
+        } :
+        null;
+
+      response.status(200).json({myBrand, competitors});
     } catch (err) {
       logger.error("competitorDeepdive: failed", err);
       const message = err instanceof Error ? err.message : "Unknown error";

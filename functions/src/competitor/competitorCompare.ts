@@ -11,6 +11,7 @@ import {
 import {getWorkspaceCompetitorMap} from "./workspaceCompetitors";
 import {findProfilesByIds} from "./profileRepo";
 import {findPostsByProfileId} from "./postRepo";
+import {loadOwnBrandForWorkspace} from "./ownBrand";
 import {
   getActiveCompetitorProfileIds,
   resolveCompetitorProfileIds,
@@ -28,8 +29,6 @@ const POSTS_LIMIT = 30;
 interface WorkspaceBrand {
   brandName: string | null;
   instagramHandle: string | null;
-  igFollowers: number | null;
-  igAvgEngagementRate: number | null;
 }
 
 async function fetchWorkspaceBrand(workspaceId: string): Promise<WorkspaceBrand | null> {
@@ -42,8 +41,6 @@ async function fetchWorkspaceBrand(workspaceId: string): Promise<WorkspaceBrand 
       workspace(id: $id) {
         brandName
         instagramHandle
-        igFollowers
-        igAvgEngagementRate
       }
     }`,
     {variables: {id: workspaceId}}
@@ -113,6 +110,12 @@ export const competitorCompare = onRequest(
         return;
       }
 
+      const ownBrand = await loadOwnBrandForWorkspace(
+        brand.instagramHandle,
+        POSTS_LIMIT,
+        validIds
+      );
+
       const profiles = await findProfilesByIds(validIds);
 
       const competitors = await Promise.all(
@@ -134,18 +137,31 @@ export const competitorCompare = onRequest(
         })
       );
 
-      const myBrand = {
-        name: brand.brandName ?? null,
-        igUsername: brand.instagramHandle ?? null,
-        followers: brand.igFollowers ?? null,
-        engagementRate: brand.igAvgEngagementRate !== null && brand.igAvgEngagementRate !== undefined ?
-          Math.round(brand.igAvgEngagementRate * 10) / 10 :
-          null,
-        postingFrequencyPerWeek: null,
-        activeCollaborations: null,
-        avgReachPerPost: null,
-        contentBreakdown: null,
-      };
+      const myBrand = ownBrand ?
+        {
+          name: brand.brandName ?? ownBrand.profile.name ?? null,
+          igUsername: brand.instagramHandle ?? ownBrand.profile.igHandle,
+          followers: ownBrand.profile.followers ?? null,
+          engagementRate: computeEngagementRate(
+            ownBrand.posts,
+            ownBrand.profile.followers ?? null,
+            ownBrand.profile.avgEngagementRate ?? null
+          ),
+          postingFrequencyPerWeek: computePostingFrequency(ownBrand.posts),
+          activeCollaborations: computeActiveCollaborations(ownBrand.posts),
+          avgReachPerPost: computeAvgReachPerPost(ownBrand.posts),
+          contentBreakdown: computeContentBreakdown(ownBrand.posts),
+        } :
+        {
+          name: brand.brandName ?? null,
+          igUsername: brand.instagramHandle ?? null,
+          followers: null,
+          engagementRate: null,
+          postingFrequencyPerWeek: null,
+          activeCollaborations: null,
+          avgReachPerPost: null,
+          contentBreakdown: null,
+        };
 
       response.status(200).json({myBrand, competitors});
     } catch (err) {

@@ -2,6 +2,7 @@ import {onRequest} from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
 import type {Request, Response} from "express";
 import {applyCors} from "../shared/cors";
+import {UPSTREAM_FAILURE_MESSAGE} from "../shared/clientErrors";
 import {brightDataApiToken} from "../config";
 import {
   extractBearerToken,
@@ -124,7 +125,7 @@ async function processAccount(
     const message = err instanceof Error ? err.message : "Unknown error";
     logger.error(`addCompetitors: fetch failed for ${igHandle}`, err);
     await setCompetitorFetchResult(workspaceId, profileId, "error", message);
-    return {input: rawInput, igHandle, profileId, error: message};
+    return {input: rawInput, igHandle, profileId, error: UPSTREAM_FAILURE_MESSAGE};
   }
 }
 
@@ -193,7 +194,7 @@ export const addCompetitors = onRequest(
         logger.error(`addCompetitors: failed for "${account}"`, err);
         results.push({
           input: account,
-          error: err instanceof Error ? err.message : "Unknown error",
+          error: UPSTREAM_FAILURE_MESSAGE,
         });
       }
     }
