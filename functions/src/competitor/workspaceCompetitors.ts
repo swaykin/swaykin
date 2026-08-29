@@ -155,6 +155,18 @@ export async function getWorkspaceCompetitorMap(
 }
 
 /**
+ * @param {CompetitorMap} map Workspace competitor pointer map.
+ * @param {string} profileId Global Profile.id.
+ * @return {boolean} Whether the profile is actively tracked by the workspace.
+ */
+export function isActiveWorkspaceCompetitor(
+  map: CompetitorMap,
+  profileId: string
+): boolean {
+  return map[profileId]?.status === "active";
+}
+
+/**
  * Writes the full competitor pointer map back to the workspace row.
  * @param {string} workspaceId Workspace row id.
  * @param {CompetitorMap} map Full competitor map to persist.

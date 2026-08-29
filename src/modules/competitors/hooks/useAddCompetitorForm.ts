@@ -9,6 +9,7 @@ interface AddCompetitorsResponse {
     igHandle?: string;
     status?: string;
     error?: string;
+    alreadyTracked?: boolean;
   }>;
   creditsDeducted?: number;
 }
@@ -37,6 +38,14 @@ export const useAddCompetitorForm = () => {
       const failed = res.results.find((r) => r.error);
       if (failed) {
         onError(failed.error ?? "Could not add competitor.");
+        return;
+      }
+      const alreadyTracked = res.results.find((r) => r.alreadyTracked);
+      if (alreadyTracked) {
+        onSuccess(`Already tracking @${handle}.`);
+        setNewHandle("");
+        setShowAddInput(false);
+        refetchWorkspace();
         return;
       }
       onSuccess(`Tracking @${handle} — crunching their last 90 days of data…`);
