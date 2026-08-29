@@ -22,3 +22,13 @@ export const brightDataApiToken = defineSecret("BRIGHTDATA_API_TOKEN");
 export const brightDataDatasetId = defineString("BRIGHTDATA_DATASET_ID", {
   default: "gd_l1vikfch901nx3by4",
 });
+
+/** JSON map of billable operation → credit cost. */
+export const creditCostsJson = defineString("CREDIT_COSTS", {
+  default: '{"discovery":20,"addCompetitor":20,"getPosts":15}',
+});
+
+/** Milliseconds before an in-flight operation lock is treated as stale. */
+export const operationLockStaleMs = defineString("OPERATION_LOCK_STALE_MS", {
+  default: "300000",
+});

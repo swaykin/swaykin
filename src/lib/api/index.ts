@@ -4,6 +4,22 @@ const functionsBaseUrl = process.env.NEXT_PUBLIC_FUNCTIONS_BASE_URL as string;
 const cloudFunctionsBaseUrl = process.env
   .NEXT_PUBLIC_CLOUD_FUNCTIONS_BASE_URL as string;
 
+export class ApiError extends Error {
+  readonly status: number;
+  readonly details?: Record<string, unknown>;
+
+  constructor(
+    message: string,
+    status: number,
+    details?: Record<string, unknown>,
+  ) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.details = details;
+  }
+}
+
 const fetchWithAuth = async (
   baseUrl: string,
   path: string,
@@ -37,8 +53,16 @@ const request = async <T>(
   }
 
   if (!res.ok) {
-    const { error } = await res.json();
-    throw new Error(error ?? `${path} failed with status (${res.status})`);
+    const payload = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      [key: string]: unknown;
+    };
+    const { error, ...details } = payload;
+    throw new ApiError(
+      error ?? `${path} failed with status (${res.status})`,
+      res.status,
+      details,
+    );
   }
 
   return res.json();

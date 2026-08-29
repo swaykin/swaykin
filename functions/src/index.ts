@@ -51,6 +51,7 @@ export {listCompetitors} from "./competitor/listCompetitors";
 export {competitorDeepdive} from "./competitor/competitorDeepdive";
 export {competitorCompare} from "./competitor/competitorCompare";
 export {getPosts} from "./competitor/getPosts";
+export {creditHistory} from "./billing/creditHistory";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript

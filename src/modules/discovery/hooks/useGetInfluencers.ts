@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
-import { api } from "@/lib/api";
+import { ApiError, api } from "@/lib/api";
 import { useFirebaseUser } from "@/hooks/useFirebaseUser";
+import { useWorkspaceContext } from "@/providers/WorkspaceProvider";
 import type { DiscoveryFilters, Influencer } from "../types";
 import type { DiscoveryFilterInput } from "./discoveryFilterMapper";
 import { buildDiscoveryFilters } from "./discoveryFilterMapper";
@@ -54,6 +55,7 @@ export const useGetInfluencers = (
   recordsLimit = 20,
 ) => {
   const { user: firebaseUser } = useFirebaseUser();
+  const { refetchWorkspace } = useWorkspaceContext();
   const [influencers, setInfluencers] = useState<Influencer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -82,12 +84,23 @@ export const useGetInfluencers = (
         .map(mapProfileToInfluencer);
 
       setInfluencers(mapped);
+      refetchWorkspace();
     } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 402) {
+          setError(new Error("Not enough credits for discovery."));
+          return;
+        }
+        if (err.status === 409) {
+          setError(new Error(err.message));
+          return;
+        }
+      }
       setError(err instanceof Error ? err : new Error("Discovery failed"));
     } finally {
       setLoading(false);
     }
-  }, [firebaseUser, filters, recordsLimit]);
+  }, [firebaseUser, filters, recordsLimit, refetchWorkspace]);
 
   return { influencers, loading, error, refetch: fetch };
 };

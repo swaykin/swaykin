@@ -23,8 +23,8 @@ export const CreditHistoryTable = () => {
           </tr>
         </thead>
         <tbody>
-          {history.map((entry) => (
-            <tr key={`${entry.date}-${entry.activity}`}>
+          {history.map((entry, index) => (
+            <tr key={`${entry.date}-${entry.activity}-${index}`}>
               <td className={`${BODY_CELL} text-text-secondary`}>{entry.date}</td>
               <td className={`${BODY_CELL} font-semibold text-text`}>
                 {entry.activity}
