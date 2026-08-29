@@ -55,7 +55,7 @@ export async function deductCredits(
 
   await dc.executeGraphql<
     {workspace_update: unknown},
-    {id: string; data: {creditsBalance_update: Array<{inc: number}>}}
+    {id: string; data: {creditsBalance: number}}
   >(
     `mutation($id: UUID!, $data: Workspace_Data!) {
       workspace_update(id: $id, data: $data)
@@ -63,7 +63,7 @@ export async function deductCredits(
     {
       variables: {
         id: workspaceId,
-        data: {creditsBalance_update: [{inc: -amount}]},
+        data: {creditsBalance: balance - amount},
       },
     }
   );
@@ -153,9 +153,10 @@ async function applyBalanceDelta(
   workspaceId: string,
   delta: number
 ): Promise<void> {
+  const balance = await getCreditsBalance(workspaceId);
   await dc.executeGraphql<
     {workspace_update: unknown},
-    {id: string; data: {creditsBalance_update: Array<{inc: number}>}}
+    {id: string; data: {creditsBalance: number}}
   >(
     `mutation($id: UUID!, $data: Workspace_Data!) {
       workspace_update(id: $id, data: $data)
@@ -163,7 +164,7 @@ async function applyBalanceDelta(
     {
       variables: {
         id: workspaceId,
-        data: {creditsBalance_update: [{inc: delta}]},
+        data: {creditsBalance: balance + delta},
       },
     }
   );

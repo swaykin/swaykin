@@ -255,7 +255,9 @@ export const addCompetitors = onRequest(
       releaseLock = await acquireOperationLock(user.workspaceId, "addCompetitor");
     } catch (err) {
       if (sendBillingError(response, err)) return;
-      throw err;
+      logger.error("addCompetitors: failed to acquire operation lock", err);
+      response.status(502).json({error: UPSTREAM_FAILURE_MESSAGE});
+      return;
     }
 
     const apiToken = brightDataApiToken.value();

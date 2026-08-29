@@ -17,6 +17,14 @@ export interface CompetitorMapEntry {
 
 export type CompetitorMap = Record<string, CompetitorMapEntry>;
 
+/** Reserved key inside Workspace.competitors JSON for in-flight operation locks. */
+export const WORKSPACE_LOCKS_KEY = "$locks";
+
+export interface WorkspaceCompetitorsPayload {
+  [WORKSPACE_LOCKS_KEY]?: Record<string, {requestId: string; startedAtMs: number}>;
+  [profileId: string]: unknown;
+}
+
 const dc = getDataConnect(connectorConfig);
 
 const UUID_RE =
@@ -39,13 +47,60 @@ function dropInvalidKeys(map: CompetitorMap): CompetitorMap {
 }
 
 /**
- * @param {string} workspaceId Workspace row id.
- * @return {Promise<CompetitorMap>} The workspace's competitor pointer map
- *   (Profile.id -> workspace-specific status/notes), or `{}` if unset.
+ * @param {string | null | undefined} raw Stored Workspace.competitors JSON.
+ * @return {{locks: Record<string, {requestId: string, startedAtMs: number}>, competitors: CompetitorMap}}
  */
-export async function getWorkspaceCompetitorMap(
+export function parseWorkspaceCompetitorsColumn(
+  raw: string | null | undefined
+): {
+  locks: Record<string, {requestId: string; startedAtMs: number}>;
+  competitors: CompetitorMap;
+} {
+  if (!raw) {
+    return {locks: {}, competitors: {}};
+  }
+  try {
+    const parsed = JSON.parse(raw) as WorkspaceCompetitorsPayload;
+    const locks = parsed[WORKSPACE_LOCKS_KEY] ?? {};
+    const competitors: CompetitorMap = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (key === WORKSPACE_LOCKS_KEY) continue;
+      if (UUID_RE.test(key) && value && typeof value === "object") {
+        competitors[key] = value as CompetitorMapEntry;
+      }
+    }
+    return {locks, competitors: dropInvalidKeys(competitors)};
+  } catch {
+    return {locks: {}, competitors: {}};
+  }
+}
+
+/**
+ * @param {Record<string, {requestId: string, startedAtMs: number}>} locks Operation locks.
+ * @param {CompetitorMap} competitors Competitor pointer map.
+ * @return {string} Serialized Workspace.competitors JSON.
+ */
+export function serializeWorkspaceCompetitorsColumn(
+  locks: Record<string, {requestId: string; startedAtMs: number}>,
+  competitors: CompetitorMap
+): string {
+  const payload: WorkspaceCompetitorsPayload = {...competitors};
+  if (Object.keys(locks).length > 0) {
+    payload[WORKSPACE_LOCKS_KEY] = locks;
+  }
+  return JSON.stringify(payload);
+}
+
+/**
+ * @param {string} workspaceId Workspace row id.
+ * @return {Promise<{locks: Record<string, {requestId: string, startedAtMs: number}>, competitors: CompetitorMap}>}
+ */
+export async function readWorkspaceCompetitorsColumn(
   workspaceId: string
-): Promise<CompetitorMap> {
+): Promise<{
+  locks: Record<string, {requestId: string; startedAtMs: number}>;
+  competitors: CompetitorMap;
+}> {
   const query = `query($id: UUID!) {
     workspace(id: $id) {
       competitors
@@ -55,14 +110,48 @@ export async function getWorkspaceCompetitorMap(
     { workspace: { competitors: string | null } | null },
     { id: string }
   >(query, {variables: {id: workspaceId}});
+  return parseWorkspaceCompetitorsColumn(res.data.workspace?.competitors);
+}
 
-  const raw = res.data.workspace?.competitors;
-  if (!raw) return {};
-  try {
-    return dropInvalidKeys(JSON.parse(raw) as CompetitorMap);
-  } catch {
-    return {};
-  }
+/**
+ * @param {string} workspaceId Workspace row id.
+ * @param {Record<string, {requestId: string, startedAtMs: number}>} locks Operation locks.
+ * @param {CompetitorMap} competitors Competitor pointer map.
+ * @return {Promise<void>}
+ */
+export async function writeWorkspaceCompetitorsColumn(
+  workspaceId: string,
+  locks: Record<string, {requestId: string; startedAtMs: number}>,
+  competitors: CompetitorMap
+): Promise<void> {
+  await dc.executeGraphql<
+    { workspace_update: { id: string } | null },
+    { id: string; data: { competitors: string } }
+  >(
+    `mutation($id: UUID!, $data: Workspace_Data!) {
+      workspace_update(id: $id, data: $data)
+    }`,
+    {
+      variables: {
+        id: workspaceId,
+        data: {
+          competitors: serializeWorkspaceCompetitorsColumn(locks, competitors),
+        },
+      },
+    }
+  );
+}
+
+/**
+ * @param {string} workspaceId Workspace row id.
+ * @return {Promise<CompetitorMap>} The workspace's competitor pointer map
+ *   (Profile.id -> workspace-specific status/notes), or `{}` if unset.
+ */
+export async function getWorkspaceCompetitorMap(
+  workspaceId: string
+): Promise<CompetitorMap> {
+  const {competitors} = await readWorkspaceCompetitorsColumn(workspaceId);
+  return competitors;
 }
 
 /**
@@ -75,18 +164,8 @@ export async function setWorkspaceCompetitorMap(
   workspaceId: string,
   map: CompetitorMap
 ): Promise<void> {
-  // workspace_update returns Workspace_KeyOutput — a scalar in the schema,
-  // but its JSON value is an object `{id: "<uuid>"}` (see profileRepo.ts).
-  // Unused here.
-  await dc.executeGraphql<
-    { workspace_update: { id: string } | null },
-    { id: string; data: { competitors: string } }
-  >(
-    `mutation($id: UUID!, $data: Workspace_Data!) {
-      workspace_update(id: $id, data: $data)
-    }`,
-    {variables: {id: workspaceId, data: {competitors: JSON.stringify(map)}}}
-  );
+  const {locks} = await readWorkspaceCompetitorsColumn(workspaceId);
+  await writeWorkspaceCompetitorsColumn(workspaceId, locks, map);
 }
 
 /**

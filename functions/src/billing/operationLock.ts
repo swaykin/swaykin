@@ -1,10 +1,18 @@
-import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import {operationLockStaleMs} from "../config";
+import {
+  readWorkspaceCompetitorsColumn,
+  writeWorkspaceCompetitorsColumn,
+} from "../competitor/workspaceCompetitors";
 import type {LockableOperation} from "./creditCosts";
 import {OperationInProgressError} from "./creditErrors";
 
-const COLLECTION = "operationLocks";
+interface LockEntry {
+  requestId: string;
+  startedAtMs: number;
+}
+
+type LockMap = Partial<Record<LockableOperation, LockEntry>>;
 
 /**
  * @return {number} Milliseconds before a stale in-flight lock may be replaced.
@@ -18,20 +26,10 @@ export function getOperationLockStaleMs(): number {
 }
 
 /**
- * @param {string} workspaceId Workspace row id.
- * @param {LockableOperation} operation Operation key.
- * @return {FirebaseFirestore.DocumentReference} Firestore lock document ref.
- */
-function lockRef(workspaceId: string, operation: LockableOperation) {
-  return admin
-    .firestore()
-    .collection(COLLECTION)
-    .doc(`${workspaceId}_${operation}`);
-}
-
-/**
  * Acquires a per-workspace operation lock. Concurrent callers receive
  * OperationInProgressError until the lock is released or goes stale.
+ * ponytail: stored in Workspace.competitors JSON under $locks until a
+ * dedicated column migration lands.
  * @param {string} workspaceId Workspace row id.
  * @param {LockableOperation} operation Operation key.
  * @return {Promise<() => Promise<void>>} Release function for this lock holder.
@@ -40,38 +38,39 @@ export async function acquireOperationLock(
   workspaceId: string,
   operation: LockableOperation
 ): Promise<() => Promise<void>> {
-  const ref = lockRef(workspaceId, operation);
   const requestId = crypto.randomUUID();
   const staleMs = getOperationLockStaleMs();
   const now = Date.now();
+  const {locks: rawLocks, competitors} =
+    await readWorkspaceCompetitorsColumn(workspaceId);
+  const locks = rawLocks as LockMap;
+  const existing = locks[operation];
 
-  await admin.firestore().runTransaction(async (tx) => {
-    const snap = await tx.get(ref);
-    if (snap.exists) {
-      const data = snap.data() as {requestId?: string; startedAtMs?: number};
-      const startedAtMs = data.startedAtMs ?? 0;
-      if (now - startedAtMs < staleMs) {
-        throw new OperationInProgressError();
-      }
-      logger.warn("operationLock: replacing stale lock", {
-        workspaceId,
-        operation,
-        previousRequestId: data.requestId,
-      });
-    }
-    tx.set(ref, {requestId, startedAtMs: now});
-  });
+  if (existing && now - existing.startedAtMs < staleMs) {
+    throw new OperationInProgressError();
+  }
+  if (existing) {
+    logger.warn("operationLock: replacing stale lock", {
+      workspaceId,
+      operation,
+      previousRequestId: existing.requestId,
+    });
+  }
+
+  locks[operation] = {requestId, startedAtMs: now};
+  await writeWorkspaceCompetitorsColumn(workspaceId, locks, competitors);
 
   return async () => {
     try {
-      await admin.firestore().runTransaction(async (tx) => {
-        const snap = await tx.get(ref);
-        if (!snap.exists) return;
-        const data = snap.data() as {requestId?: string};
-        if (data.requestId === requestId) {
-          tx.delete(ref);
-        }
-      });
+      const current = await readWorkspaceCompetitorsColumn(workspaceId);
+      const currentLocks = current.locks as LockMap;
+      if (currentLocks[operation]?.requestId !== requestId) return;
+      delete currentLocks[operation];
+      await writeWorkspaceCompetitorsColumn(
+        workspaceId,
+        currentLocks,
+        current.competitors
+      );
     } catch (err) {
       logger.warn("operationLock: release failed", {workspaceId, operation, err});
     }

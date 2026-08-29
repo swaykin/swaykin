@@ -153,7 +153,9 @@ export const discovery = onRequest(
       releaseLock = await acquireOperationLock(workspaceId, "discovery");
     } catch (err) {
       if (sendBillingError(response, err)) return;
-      throw err;
+      logger.error("discovery: failed to acquire operation lock", err);
+      response.status(502).json({error: UPSTREAM_FAILURE_MESSAGE});
+      return;
     }
 
     let creditsDeducted = 0;
