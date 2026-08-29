@@ -1,6 +1,7 @@
 import {onRequest} from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
 import {applyCors} from "../shared/cors";
+import {UPSTREAM_FAILURE_MESSAGE} from "../shared/clientErrors";
 import {
   extractBearerToken,
   verifyFirebaseIdToken,
@@ -11,13 +12,16 @@ import {findPostsByProfileId} from "./postRepo";
 import {getWorkspaceCompetitorMap} from "./workspaceCompetitors";
 import {fetchAndPersistCompetitor} from "./competitorFetchWorker";
 import {brightDataApiToken} from "../config";
+import {deductForOperation, refundCredits} from "../billing/credits";
+import {getCreditCost} from "../billing/creditCosts";
+import {sendBillingError} from "../billing/httpErrors";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;
 
 /**
- * GET /getPosts?username=<igHandle>&page=<n>&limit=<n>
+ * GET /v1/getPosts?username=<igHandle>&page=<n>&limit=<n>
  *
  * Returns paginated posts for a competitor profile. If the requested page
  * cannot be fully satisfied from the DB (i.e. the DB is exhausted), a fresh
@@ -101,6 +105,7 @@ export const getPosts = onRequest(
       }
 
       let posts = await findPostsByProfileId(profile.id, limit, offset);
+      let creditsDeducted = 0;
 
       if (posts.length < limit) {
         logger.info(
@@ -108,6 +113,13 @@ export const getPosts = onRequest(
           "triggering BrightData refresh"
         );
         try {
+          const deducted = await deductForOperation(
+            user.workspaceId,
+            "getPosts",
+            `Fetch posts for @${username}`
+          );
+          creditsDeducted = deducted.amount;
+
           await fetchAndPersistCompetitor({
             profileId: profile.id,
             igHandle: username,
@@ -116,15 +128,37 @@ export const getPosts = onRequest(
           });
           posts = await findPostsByProfileId(profile.id, limit, offset);
         } catch (fetchErr) {
+          if (sendBillingError(response, fetchErr)) return;
+
+          if (creditsDeducted > 0) {
+            await refundCredits(user.workspaceId, creditsDeducted, {
+              activityType: "refund",
+              activityDescription: `Refund: get posts @${username} failed`,
+            });
+            creditsDeducted = 0;
+          }
           logger.warn(
             "getPosts: BrightData refresh failed, returning cached results",
             fetchErr
           );
+          response.status(502).json({
+            error: UPSTREAM_FAILURE_MESSAGE,
+            creditsDeducted,
+          });
+          return;
         }
       }
 
-      response.status(200).json({posts, page, limit, username});
+      response.status(200).json({
+        posts,
+        page,
+        limit,
+        username,
+        creditsDeducted,
+        creditCost: getCreditCost("getPosts"),
+      });
     } catch (err) {
+      if (sendBillingError(response, err)) return;
       logger.error("getPosts: failed", err);
       const message = err instanceof Error ? err.message : "Unknown error";
       response.status(502).json({error: message});

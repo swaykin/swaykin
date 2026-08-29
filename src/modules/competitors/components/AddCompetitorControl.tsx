@@ -19,6 +19,7 @@ export const AddCompetitorControl = ({
     newHandle,
     setNewHandle,
     submitAddCompetitor,
+    submitting,
   } = useAddCompetitorForm();
 
   return (
@@ -42,8 +43,9 @@ export const AddCompetitorControl = ({
             kind="primary"
             height="32px"
             onClick={submitAddCompetitor}
+            disabled={submitting}
           >
-            Add
+            {submitting ? "Adding…" : "Add"}
           </Button>
         </Box>
       ) : (

@@ -14,12 +14,20 @@ import {
   findProfileByHandle,
   createProfile,
   isProfileStale,
+  type ProfileRow,
 } from "./profileRepo";
 import {
   addCompetitorToWorkspace,
   setCompetitorFetchResult,
+  getWorkspaceCompetitorMap,
+  isActiveWorkspaceCompetitor,
+  type CompetitorMap,
 } from "./workspaceCompetitors";
 import {fetchAndPersistCompetitor} from "./competitorFetchWorker";
+import {acquireOperationLock} from "../billing/operationLock";
+import {deductForOperation, refundCredits} from "../billing/credits";
+import {getCreditCost} from "../billing/creditCosts";
+import {sendBillingError} from "../billing/httpErrors";
 
 interface AddCompetitorsBody {
   accounts: string[];
@@ -32,6 +40,35 @@ interface AccountResult {
   followers?: number | null;
   status?: "active" | "error";
   error?: string;
+  creditsDeducted?: number;
+  alreadyTracked?: boolean;
+}
+
+/**
+ * @param {CompetitorMap} map Workspace competitor pointer map.
+ * @param {ProfileRow | null} existing Resolved global profile, if any.
+ * @return {boolean} Whether this add should charge credits.
+ */
+function isBillableCompetitorAdd(
+  map: CompetitorMap,
+  existing: ProfileRow | null
+): boolean {
+  if (!existing) return true;
+  return !isActiveWorkspaceCompetitor(map, existing.id);
+}
+
+/**
+ * @param {CompetitorMap} map Workspace competitor pointer map.
+ * @param {string} profileId Global Profile.id.
+ * @return {void}
+ */
+function markCompetitorActiveInMap(map: CompetitorMap, profileId: string): void {
+  map[profileId] = {
+    status: "active",
+    addedAt: new Date().toISOString(),
+    notes: map[profileId]?.notes ?? null,
+    error: null,
+  };
 }
 
 /**
@@ -58,12 +95,14 @@ function parseBody(body: unknown): AddCompetitorsBody | null {
  * @param {string} rawInput Raw account string (handle or URL).
  * @param {string} workspaceId Calling workspace's id.
  * @param {string} apiToken Bright Data API bearer token.
+ * @param {CompetitorMap} competitorMap In-memory workspace competitor map.
  * @return {Promise<AccountResult>} Outcome for this account.
  */
 async function processAccount(
   rawInput: string,
   workspaceId: string,
-  apiToken: string
+  apiToken: string,
+  competitorMap: CompetitorMap
 ): Promise<AccountResult> {
   const normalized = normalizeInstagramAccount(rawInput);
   if (!normalized) {
@@ -72,39 +111,88 @@ async function processAccount(
   const {igHandle, profileUrl} = normalized;
 
   const existing = await findProfileByHandle(igHandle);
-  const hasRealData =
-    existing && (existing.followers !== null || existing.postsCount !== null);
-
-  if (existing && hasRealData) {
-    await addCompetitorToWorkspace(workspaceId, existing.id, "active");
-    if (isProfileStale(existing)) {
-      try {
-        await fetchAndPersistCompetitor({
-          profileId: existing.id,
-          igHandle,
-          profileUrl,
-          apiToken,
-        });
-      } catch (err) {
-        // Non-fatal — existing data still usable, log and continue
-        logger.warn(`addCompetitors: stale refresh failed for ${igHandle}`, err);
-      }
-    }
+  if (existing && isActiveWorkspaceCompetitor(competitorMap, existing.id)) {
     return {
       input: rawInput,
       igHandle,
       profileId: existing.id,
       followers: existing.followers,
       status: "active",
+      creditsDeducted: 0,
+      alreadyTracked: true,
     };
   }
 
-  // New profile or placeholder from a previously failed fetch
+  const hasRealData =
+    existing && (existing.followers !== null || existing.postsCount !== null);
+  let creditsDeducted = 0;
+
+  if (isBillableCompetitorAdd(competitorMap, existing)) {
+    const deducted = await deductForOperation(
+      workspaceId,
+      "addCompetitor",
+      `Add competitor @${igHandle}`
+    );
+    creditsDeducted = deducted.amount;
+  }
+
+  if (existing && hasRealData && !isProfileStale(existing)) {
+    await addCompetitorToWorkspace(workspaceId, existing.id, "active");
+    markCompetitorActiveInMap(competitorMap, existing.id);
+    return {
+      input: rawInput,
+      igHandle,
+      profileId: existing.id,
+      followers: existing.followers,
+      status: "active",
+      creditsDeducted,
+    };
+  }
+
+  if (existing && hasRealData && isProfileStale(existing)) {
+    await addCompetitorToWorkspace(workspaceId, existing.id, "active");
+    markCompetitorActiveInMap(competitorMap, existing.id);
+    try {
+      await fetchAndPersistCompetitor({
+        profileId: existing.id,
+        igHandle,
+        profileUrl,
+        apiToken,
+      });
+      return {
+        input: rawInput,
+        igHandle,
+        profileId: existing.id,
+        followers: existing.followers,
+        status: "active",
+        creditsDeducted,
+      };
+    } catch (err) {
+      if (creditsDeducted > 0) {
+        await refundCredits(workspaceId, creditsDeducted, {
+          activityType: "refund",
+          activityDescription: `Refund: add competitor @${igHandle} failed`,
+        });
+      }
+      logger.warn(`addCompetitors: stale refresh failed for ${igHandle}`, err);
+      return {
+        input: rawInput,
+        igHandle,
+        profileId: existing.id,
+        followers: existing.followers,
+        status: "active",
+        error: UPSTREAM_FAILURE_MESSAGE,
+        creditsDeducted: 0,
+      };
+    }
+  }
+
   const profileId = existing ?
     existing.id :
     await createProfile({igHandle, type: "competitor", name: igHandle});
 
   await addCompetitorToWorkspace(workspaceId, profileId, "active");
+  markCompetitorActiveInMap(competitorMap, profileId);
 
   try {
     const result = await fetchAndPersistCompetitor({
@@ -120,12 +208,25 @@ async function processAccount(
       profileId,
       followers: result.followers,
       status: "active",
+      creditsDeducted,
     };
   } catch (err) {
+    if (creditsDeducted > 0) {
+      await refundCredits(workspaceId, creditsDeducted, {
+        activityType: "refund",
+        activityDescription: `Refund: add competitor @${igHandle} failed`,
+      });
+    }
     const message = err instanceof Error ? err.message : "Unknown error";
     logger.error(`addCompetitors: fetch failed for ${igHandle}`, err);
     await setCompetitorFetchResult(workspaceId, profileId, "error", message);
-    return {input: rawInput, igHandle, profileId, error: UPSTREAM_FAILURE_MESSAGE};
+    return {
+      input: rawInput,
+      igHandle,
+      profileId,
+      error: UPSTREAM_FAILURE_MESSAGE,
+      creditsDeducted: 0,
+    };
   }
 }
 
@@ -184,21 +285,49 @@ export const addCompetitors = onRequest(
       return;
     }
 
-    const apiToken = brightDataApiToken.value();
-    const results: AccountResult[] = [];
-
-    for (const account of parsedBody.accounts) {
-      try {
-        results.push(await processAccount(account, user.workspaceId, apiToken));
-      } catch (err) {
-        logger.error(`addCompetitors: failed for "${account}"`, err);
-        results.push({
-          input: account,
-          error: UPSTREAM_FAILURE_MESSAGE,
-        });
-      }
+    let releaseLock: (() => Promise<void>) | null = null;
+    try {
+      releaseLock = await acquireOperationLock(user.workspaceId, "addCompetitor");
+    } catch (err) {
+      if (sendBillingError(response, err)) return;
+      logger.error("addCompetitors: failed to acquire operation lock", err);
+      response.status(502).json({error: UPSTREAM_FAILURE_MESSAGE});
+      return;
     }
 
-    response.status(200).json({results});
+    const apiToken = brightDataApiToken.value();
+    const results: AccountResult[] = [];
+    let creditsDeducted = 0;
+    const competitorMap = await getWorkspaceCompetitorMap(user.workspaceId);
+
+    try {
+      for (const account of parsedBody.accounts) {
+        try {
+          const result = await processAccount(
+            account,
+            user.workspaceId,
+            apiToken,
+            competitorMap
+          );
+          creditsDeducted += result.creditsDeducted ?? 0;
+          results.push(result);
+        } catch (err) {
+          if (sendBillingError(response, err)) return;
+          logger.error(`addCompetitors: failed for "${account}"`, err);
+          results.push({
+            input: account,
+            error: UPSTREAM_FAILURE_MESSAGE,
+          });
+        }
+      }
+
+      response.status(200).json({
+        results,
+        creditsDeducted,
+        creditCostPerAdd: getCreditCost("addCompetitor"),
+      });
+    } finally {
+      await releaseLock?.();
+    }
   }
 );

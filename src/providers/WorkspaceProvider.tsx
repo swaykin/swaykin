@@ -9,6 +9,7 @@ export type UpdateWorkspacePayload = WorkspaceDetails &
 export type WorkspaceContextValue = {
   workspace: Workspace;
   onUpdateWorkspace: (patch: Partial<UpdateWorkspacePayload>) => Promise<void>;
+  refetchWorkspace: () => void;
 };
 
 export const WorkspaceContext = createContext<WorkspaceContextValue | null>(

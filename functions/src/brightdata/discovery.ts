@@ -26,6 +26,10 @@ import {
   UPSTREAM_FAILURE_MESSAGE,
 } from "../shared/clientErrors";
 import {trackDiscoveryJob} from "./discoveryJobRepo";
+import {acquireOperationLock} from "../billing/operationLock";
+import {deductForOperation, refundCredits} from "../billing/credits";
+import {getCreditCost} from "../billing/creditCosts";
+import {sendBillingError} from "../billing/httpErrors";
 
 interface DiscoveryRequestBody {
   filters: DiscoveryFilterInput[];
@@ -134,21 +138,38 @@ export const discovery = onRequest(
       logger.warn("discovery: DB query failed, will use Brightdata only", dbErr);
     }
 
-    // Step 2: DB satisfied the full request → return immediately
+    // Step 2: DB satisfied the full request → return immediately (no credits)
     if (dbResults.length >= clientLimit) {
       trackDiscoveryJob(
         workspaceId, null,
         JSON.stringify(parsedBody.filters), clientLimit, dbResults.length
       );
-      response.status(200).json({data: dbResults});
+      response.status(200).json({data: dbResults, creditsDeducted: 0});
       return;
     }
 
-    // Step 3: DB partial or empty → fetch remaining from Brightdata
-    const remaining = clientLimit - dbResults.length;
-    const apiToken = brightDataApiToken.value();
-
+    let releaseLock: (() => Promise<void>) | null = null;
     try {
+      releaseLock = await acquireOperationLock(workspaceId, "discovery");
+    } catch (err) {
+      if (sendBillingError(response, err)) return;
+      logger.error("discovery: failed to acquire operation lock", err);
+      response.status(502).json({error: UPSTREAM_FAILURE_MESSAGE});
+      return;
+    }
+
+    let creditsDeducted = 0;
+    try {
+      const deducted = await deductForOperation(
+        workspaceId,
+        "discovery",
+        "Influencer discovery search"
+      );
+      creditsDeducted = deducted.amount;
+
+      const remaining = clientLimit - dbResults.length;
+      const apiToken = brightDataApiToken.value();
+
       const triggerResult = await triggerDatasetFilter({
         datasetId: parsedBody.datasetId ?? brightDataDatasetId.value(),
         filter: datasetFilter,
@@ -199,12 +220,27 @@ export const discovery = onRequest(
         data: [...dbResults, ...bdArray],
         profilesUpserted,
         postsUpserted,
+        creditsDeducted,
+        creditCost: getCreditCost("discovery"),
       });
     } catch (err) {
+      if (sendBillingError(response, err)) return;
+
+      if (creditsDeducted > 0) {
+        await refundCredits(workspaceId, creditsDeducted, {
+          activityType: "refund",
+          activityDescription: "Refund: discovery search failed",
+        });
+        creditsDeducted = 0;
+      }
+
       logger.error("Discovery filter failed", err);
       response.status(isUpstreamTimeout(err) ? 504 : 502).json({
         error: UPSTREAM_FAILURE_MESSAGE,
+        creditsDeducted,
       });
+    } finally {
+      await releaseLock?.();
     }
   }
 );

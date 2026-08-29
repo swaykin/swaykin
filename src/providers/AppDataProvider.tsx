@@ -17,7 +17,7 @@ import {
 
 export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   const { data: user, setData: setUser } = useQuery<User>("/user");
-  const { data: workspace, setData: setWorkspace } =
+  const { data: workspace, setData: setWorkspace, refetch: refetchWorkspace } =
     useQuery<Workspace>("/workspace");
 
   const onUpdateUser = useCallback(
@@ -53,7 +53,9 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   if (!user || !workspace) return <AppTombstone />;
 
   return (
-    <WorkspaceContext.Provider value={{ workspace, onUpdateWorkspace }}>
+    <WorkspaceContext.Provider
+      value={{ workspace, onUpdateWorkspace, refetchWorkspace }}
+    >
       <UserContext.Provider value={{ user, onUpdateUser }}>
         {children}
       </UserContext.Provider>
